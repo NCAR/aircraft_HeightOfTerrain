@@ -105,45 +105,44 @@ Rev. Geophys., 45, RG2004, doi:10.1029/2005RG000183%
 } the altitude of the Earth's surface was mapped from 56S to 60N latitude
 with resolution of 3 arc-sec or about 90 m at the equator. For the
 US and territories, the resolution was 1 arc-sec or about 30 m. The
-data from this mission is archived at this web site: \href{http://www.webgis.com/srtm3.html}{http://www.webgis.com/srtm3.html}.
-The files can be download in individual files that span 1 degree by
+data from this mission are archived at this web site: \href{http://www.webgis.com/srtm3.html}{http://www.webgis.com/srtm3.html}.
+The measurements can be download in individual files that span 1 degree by
 1 degree. The format of these files leads to the need for some processing
-that is documented here. An improved dataset that is largely based on the SRTM database but has been edited extensively to fill in missing values is available here: \href{http://www.viewfinderpanoramas.org/dem3.html}, a database that was constructed and is maintained by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. For the US, higher-resolution data are available at this web page: \href{http://ned.usgs.gov/epqs/}. This could have been used for NOMADSS, but the higher resolution does not have an advantage for the present purpose and it was thought preferable to develop a tool that would work worldwide. However, for NOMADSS the USGS data are valuable for checking the results from the SRTM database.
+that is documented here. An improved dataset that is largely based on the SRTM database but has been edited extensively to fill in missing values is available here: \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}. That database  was constructed and is maintained by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. For the US, higher-resolution data are available at this web page: \href{http://ned.usgs.gov/epqs/}{http://ned.usgs.gov/epqs/}. This USGS website provides the ability for a user to supply a latitude-longitude position and receive a height measurement, so it could have been used for NOMADSS instead of the Ferranti site that was selected, but the higher resolution does not have an advantage for the present purpose and it was thought preferable to develop a tool that would work worldwide. However, for NOMADSS the USGS data are valuable for checking the results obtained, as discussed later in this memo.
 
 The R code that downloaded these files is in the 'chunk' of this document
 called 'download-zip-files'. Initially, the range downloaded covered 24N to 45N latitude and -105W to -72W longitude. 
 After unzipping, the data set was large, approaching 1 GB as saved for use in this routine, but the area covered was a significant part of the U.S.~so this large database was needed to span that full area. The heights in the 3-arc-sec files are presented in 1201$\times$1201
-arrays where the edges duplicate the values in the adjacent arrays.
-The missing-value flag is -32768. The format is row-major, i.e., the
+arrays where the edges duplicate the values in the adjacent arrays and the measurements cover 1$^{\circ}\times 1^{\circ}$. The format is row-major, i.e., the
 1201 values for the first west-to-east row are presented first, then
 the next row to the south, etc. Because R is inherently column-major,
-there are some aspects of indexing in the code provided here that
-have indices reversed from what might have been expected. The unpacked individual 1-deg files have 2,884,802 bytes. 
+there are some aspects of indexing in the code used here that
+have indices reversed from what might have been expected. The unpacked individual 1-deg files have 2,884,802 bytes. In these archives, the missing-value flag is -32768. 
 
 The reference location for each 1-degree by 1-degree array is the
-name of the individual file (e.g., \textquotedbl{}S43E173.hgt\textquotedbl{}
-has a reference position of 43$^{\circ}$S and 173$^{\circ}$E at
+name of the individual file (e.g., \textquotedbl{}N43W101.hgt\textquotedbl{}
+has a reference position of 43$^{\circ}$N and 101$^{\circ}$W at
 the center of the southwest-corner element of the array). The values give
 the height in meters above the WGS84/EGM96 geoid. The measurement
 uncertainty was about 9 m at 90\% confidence%
 \footnote{The standard uncertainty would be about 5 m.%
 } (Farr et al.\textasciitilde{}2007), but there are some biases. The
-SAR-radar technique did not penetrate fully through vegetation and
+SAR radar did not always penetrate fully through vegetation and
 so might reflect the top of the vegetation canopy or some level intermediate
 between the canopy and the surface, and the radar penetrated a few
 meters into snow and so measured a height between the snow cover and
 the terrain (as measured in Feb.~2000). Also, there are some gaps,
-especially in mountainous areas, although those have mostly been filled in this edited dataset by reference to topographic maps and there are only very rare gaps for the CONUS.
+especially in mountainous areas, although those have mostly been filled in this Ferranti-edited dataset by reference to topographic maps and there are only very rare gaps for the CONUS.
 
 Below, R code that downloads, unzips, and reads the data files is
 listed. The entire-Earth dataset would require about 25 GB to store,
-so the download should be limited in area to the region of the project. Some files are missing because they cover only ocean areas; in this processing, those are interpreted as leading to zero values for the terrain.
+so the download should be limited in area to the region of the project. For NOMADSS, the project range covered a large portion of the SE U.S., so there was still a necessity to download and save a large amount of data, approaching 1 GB. The routine is set to do this the first time it is run and save the data in an archive that can be used on subsequent runs. Some files are missing because they cover only ocean areas; in this processing, those are interpreted as leading to zero values for the terrain.
 
 Here the data files are saved in Rdata-format gzipped files suitable
-for loading via commands like \textquotedbl{}load(file='XN40W105.gz')\textquotedbl{},
-which will retrieve the 'height' matrix for that lat/lon square.
+for loading via commands like \textquotedbl{}load(file='ZN40W101.gz')\textquotedbl{},
+which will retrieve the 'height' matrix for that lat/lon square. This is handled in the code-chunk 'download-zip-files' listed below.
 
-<<download-zip-files, echo=TRUE, cache=TRUE>>=
+<<download-zip-files, echo=TRUE, include=TRUE, cache=TRUE>>=
 
 # there should be a subdirectory named 'TerrainData' 
 # under the main project directory 
@@ -159,11 +158,11 @@ setwd ("./TerrainData")    # Save the data in a subdirectory
 ## for US, e.g., NOMADSS, indices are as follows:
 #      letter = LETTER[floor (lat/4) + 1]
 #      Nmbr = 30 + floor (lon/6) + 1
-#  from Janine: range is 24-45N and -105 -- -72 for NOMADSS
-lt_s <- 48 
-lt_n <- 40 
-lg_w <- 165 
-lg_e <- 175 
+#  from Janine: range is 24--45N and 105--72W for NOMADSS
+# lt_s <- 48    # limits for DEEPWAVE
+# lt_n <- 40 
+# lg_w <- 165 
+# lg_e <- 175 
 # range for NOMADSS: had to download G13 to L19
 lt_s <- 24 # N
 lt_n <- 45 # N
@@ -180,7 +179,7 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
     if (file.exists(sname)) {   # Skip if file is already present 
       unlink (dname)  
     } else {
-      print (sprintf("need file dname = %s", dname))
+#     print (sprintf("need file dname = %s", dname))
 # is it already there from a previous download?
       if (file.exists (dname)) {
         #                # 'swap' changes from big-endian to little-endian 
@@ -212,21 +211,16 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
             unzip (zipFileName, junkpaths=TRUE)
             unlink (zipFileName)
             system (sprintf("touch %s", zipFileName))
-            ## The reason for the preceding statement is to prevent trying to download again
-            #  in cases where the file is not present, for example because it is entirely
-            #  over ocean.
+            ## The reason for the preceding statement is to prevent trying to
+            ## download repeatedly in cases where the file is not present, for
+            ## example because it is entirely over ocean.
           }
         }
       }
-#     url <- sprintf ("http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Islands/%s.zip", dname) 
-#       if (RCurl::url.exists (url)) { 
-#         system (sprintf ("wget %s", url), wait=TRUE) # wget call to do the download 
-#         utils::unzip(sprintf("%s.zip", dname)) # and unzip 
-#                                                # then read the whole deg x deg array
       if (file.exists(dname)) {
 #                # 'swap' changes from big-endian to little-endian 
         height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
-        height [height == -32768] <- NA     # set NA for missing values 
+        height [height == -32768] <- NA     # set missing values to NA
         dim (height) <- c(1201,1201)        # Make into a matrix 
         save (height, file=sname, compress='gzip') 
         unlink (dname) # delete the unzipped file 
@@ -234,24 +228,25 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
     } 
   } 
 }
+setwd("..")
 
 @
 
-The first problem dealt with in this code was that the values are binary two-byte or 16-bit
+The values in these data files are binary two-byte or 16-bit
 signed integers and are in big-endian format (most significant byte
 first) while our processing machines are mostly little-endian, so
 a byte-swapping conversion is necessary. This was readily performed
 by the R reading function 'readBin', as illustrated in the preceding
 code chunk. It was useful to construct a function that would return
 the terrain altitude for a given latitude and longitude, so that is
-shown in the next chunk:
+shown in the next chunk. This function is also used in the validation
+step discussed later in this memo.
 
 <<height-function, echo=TRUE, include=TRUE>>=
 
 HeightOfTerrain <- function (.lat, .long) { 
   lt <- as.integer (floor(.lat)) 
   lg <- as.integer (floor(.long)) 
-  #print(sprintf("entry to HOT, lat/lon = %f %f", .lat, .long))
   if (is.na(lt)) {return (NA)} 
   if (is.na(lg)) {return (NA)} 
   if (lt < 0) { 
@@ -266,17 +261,12 @@ HeightOfTerrain <- function (.lat, .long) {
   } else { 
     lEW <- "E" 
   } 
-  vname <- sprintf("Z%s%d%s%d", lNS, lt, lEW, lg) 
-  #print (sprintf(" looking for %s in the global environment:", vname))
+  vname <- sprintf("Z%s%02d%s%03d", lNS, lt, lEW, lg) 
   if (!exists(vname, .GlobalEnv)) { 
-    #print ("not found; load it")
     zfile <- sprintf("%s.gz", vname)
-    #print (sprintf ("looking for file %s", zfile))
-    if (file.exists(zfile)) {
-      #print (" found, so load it")
-      load(file=sprintf("%s.gz", vname)) 
+    if (file.exists(sprintf("./TerrainData/%s",zfile))) {
+      load(file=sprintf("./TerrainData/%s.gz", vname)) 
       assign (vname, height, envir=.GlobalEnv)
-      #print (sprintf("%s present in global env? (1 => yes) %d", vname, exists(vname, .GlobalEnv)))
     } else { 
       return (NA) 
     } 
@@ -287,15 +277,40 @@ HeightOfTerrain <- function (.lat, .long) {
     iy <- 1201
   }
   hgt <- get(vname, envir=.GlobalEnv)[ix, iy] 
-  #print (sprintf(" ix, iy and hgt: %d %d %f", ix, iy, hgt))
   return (hgt) 
 }
 ## check this here: http://ned.usgs.gov/epqs/
 
 @
 
+\section*{Testing results against the USGS values}
 
-\section*{Adding a netCDR terrain-height variable}
+The USGS provides a service where a user can obtain the height of terrain at a specified latitude and longitude. The web site is \href{http://ned.usgs.gov/epqs}{http://ned.usgs.gov/epqs}. The following code chunk generates random latitude and longitude coordinates covering the NOMADSS operational area, fetches the altitude from the USGS site, and compares it to the altitude obtained from the 'HeightOfTerrain' subroutine used in this program.
+
+<<USGS-test, echo=TRUE, include=TRUE, warning=FALSE,message=FALSE>>=
+
+require(RCurl)
+n <- 5000
+HOT <- vector("numeric", n)
+USGS <- vector("numeric", n)
+ltt <- runif(n, lt_s, lt_n)
+lgg <- runif(n, lg_w, lg_e)
+for (i in 1:n) {
+  HOT[i] <- HeightOfTerrain(ltt[i], lgg[i])
+  url <- sprintf("http://137.227.248.58/pqs.php?x=%f&y=%f&units=Meters&output=json", lgg[i], ltt[i])
+  USGS[i] <- as.numeric(strsplit(strsplit(RCurl::getURL(url), 'Elevation\":')[[1]][2], ',.*'))
+}
+meanDiff <- mean (HOT-USGS, na.rm=TRUE)
+sdDiff <- sd (HOT-USGS, na.rm=TRUE)
+print(sprintf("mean difference: %f", meanDiff))
+print(sprintf("std dev: %f", sdDiff))
+hist(HOT-USGS, breaks=50, xlim=c(-10.,10.))
+@
+
+The mean difference from this comparison was \Sexpr{round(meanDiff,2)} m and the standard deviation in the difference was \Sexpr{round(sdDiff,2)} m for \Sexpr{n} generated points. Because these data sources have different resolution (about 3 seconds for SRTM, about 1/3 second for USGS), some small differences are expected, but these values are closer than would be expected from the uncertainty in the SRTM values discussed above so this is good evidence that the values used here are within expected tolerances for uncertainty.
+
+
+\section*{Adding a netCDF terrain-height variable}
 
 For a netCDF file, it is then possible to define new variables that
 represent the elevation of the terrain below the aircraft and also
@@ -306,39 +321,36 @@ code that does this:
 
 fname <- sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 fnew <- sprintf("%s%s/%s%sZ.nc", DataDirectory (), Project, Project, Flight) 
-# copy file to avoid changing original: 
-file.copy (fname, fnew, overwrite=TRUE) 
+# copy file to avoid changing original: note 'Z' in new file name
+file.copy (fname, fnew, overwrite=TRUE) #careful: will overwrite 'Z' file
 # load data needed to calculate the new variables:
-#   ... there is no GGALTB in NOMADSS files? What is GGALTC?
+#   ... there is no GGALTB in NOMADSS files? What is GGALTC? Use GGALT
 Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT")) 
 SFC <- vector ("numeric", length(Data$Time)) 
 netCDFfile <- open.ncdf (fnew, write=TRUE) 
 # have to use a loop here because HeightOfTerrain looks
 # up and loads needed files so is not suited to vector ops
 for (i in 1:length (Data$Time)) {
-  if (is.na(Data$LATC[i])) {next} 
-  if (is.na(Data$LONC[i])) {next} 
+  if (is.na(Data$LATC[i])) {SFC[i] <- NA ; next} 
+  if (is.na(Data$LONC[i])) {SFC[i] <- NA ; next} 
   SFC[i] <- HeightOfTerrain (Data$LATC[i], Data$LONC[i]) 
 } 
 
-# replace missing values with interpolated values for gaps up to 5 s in length:
-#     (104 points in DW Flight 12, incl one at 83822)
-#     ba,rn=FALSE means keep values as NA if na.approx can't replace them;
-#     this is needed to keep SFC the same size as other variables.
+# replace missing values with interpolated values for gaps up to 10 s in length:
 SFC <- zoo::na.approx (SFC, maxgap=10, na.rm = FALSE) 
 SFC[is.na(SFC)] <- 0      # replace missing values with zero; mostly ocean pts
 ALTG <- Data$GGALT - SFC 
-Data["SFC_SRTM"] <- SFC 
+Data["SFC_SRTM"] <- SFC   # add new variable to data.frame
+Data["ALTG_SRTM"] <- ALTG
 SaveRData <- "NOMADSSterrain.Rdata.gz"
 # comment one of these
 save(Data, file=SaveRData, compress="gzip")
-load(file=SaveRData)
+# load(file=SaveRData)
 
 <<modify-netCDF-file>>=
 
-
-varSFC <- var.def.ncdf ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., "Elevation of the Earth's surface below the aircraft position") 
-varALTG <- var.def.ncdf ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., "Altitude of the aircraft above the Earth's surface")
+varSFC <- var.def.ncdf ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., "Elevation of the Earth's surface below the aircraft position, WGS-84") 
+varALTG <- var.def.ncdf ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., "Altitude of the aircraft above the Earth's surface, WGS-84")
 newfile <- var.add.ncdf (netCDFfile, varSFC) 
 newfile <- var.add.ncdf (newfile, varALTG) 
 put.var.ncdf (newfile, "SFC_SRTM", SFC) 
@@ -376,6 +388,9 @@ The result of this processing is a new netCDF file that duplicates the original 
 \begin{center}
 \textsf{\textcolor{blue}{-- End of Memo --}}
 \par\end{center}
+Acknowledgements:
+
+Data obtained from \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}, a database constructed by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. The analyses reported here were performed using R\footnote{R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/}, with RStudio\footnote{RStudio: Integrated development environment for R (Version 0.98.879) [Computer software]. Boston, MA. Available from http://www.rstudio.org/ (2009)} and knitr\footnote{Xie, Y. (2013), knitr: A general-purpose package for dynamic report generation in R. R package version 1.3. Version 1.6 was used for this work. See also Xie, Y (2014), Dynamic documents with R and knitr, CRC Press, Chapman and Hall, 190 pp.}. 
 \vfill\eject
 Reproducibility:
 
