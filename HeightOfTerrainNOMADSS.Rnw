@@ -287,7 +287,7 @@ HeightOfTerrain <- function (.lat, .long) {
 
 The USGS provides a service where a user can obtain the height of terrain at a specified latitude and longitude. The web site is \href{http://ned.usgs.gov/epqs}{http://ned.usgs.gov/epqs}. The following code chunk generates random latitude and longitude coordinates covering the NOMADSS operational area, fetches the altitude from the USGS site, and compares it to the altitude obtained from the 'HeightOfTerrain' subroutine used in this program.
 
-<<USGS-test, echo=TRUE, include=TRUE, warning=FALSE,message=FALSE>>=
+<<USGS-test, echo=TRUE, include=TRUE, warning=FALSE,message=FALSE, eval=FALSE>>=
 
 require(RCurl)
 n <- 5000
@@ -307,7 +307,24 @@ print(sprintf("std dev: %f", sdDiff))
 hist(HOT-USGS, breaks=50, xlim=c(-10.,10.))
 @
 
-The mean difference from this comparison was \Sexpr{round(meanDiff,2)} m and the standard deviation in the difference was \Sexpr{round(sdDiff,2)} m for \Sexpr{n} generated points. Because these data sources have different resolution (about 3 seconds for SRTM, about 1/3 second for USGS), some small differences are expected, but these values are closer than would be expected from the uncertainty in the SRTM values discussed above so this is good evidence that the values used here are within expected tolerances for uncertainty.
+The mean difference from this comparison was
+%\Sexpr{round(meanDiff,2)} m 
+-0.7 m and the standard deviation in the difference was 
+%\Sexpr{round(sdDiff,2)} m 
+3.4 m for 
+%\Sexpr{n} 
+5000 generated points. Because these data sources have different resolution (about 3 arc-sec for SRTM, about 1/3 arc-sec for USGS), some small differences are expected, but these values are closer than would be expected from the uncertainty in the SRTM values discussed above so this is good evidence that the values used here are within expected tolerances for uncertainty. Figure 1 is a histogram of the differences for the 5000 randomly selected positions.
+
+\noindent \begin{center}
+\begin{figure}
+\noindent \begin{centering}
+\includegraphics[width=15cm]{figure/USGS-test}
+\par\end{centering}
+
+\protect\caption{\textsl{Difference in altitude between that obtained from the USGS web site and that provided by the function HeightOfTerrain in this program, in meters, for the 5000 randomly generated points in the NOMADSS operations area.}}
+\end{figure}
+
+\par\end{center}
 
 
 \section*{Adding a netCDF terrain-height variable}
@@ -356,22 +373,24 @@ newfile <- var.add.ncdf (newfile, varALTG)
 put.var.ncdf (newfile, "SFC_SRTM", SFC) 
 put.var.ncdf (newfile, "ALTG_SRTM", ALTG) 
 close.ncdf (newfile)
+FigCap1 <- sprintf("The flight track for %s flight %s.", Project, Flight)
 
 @
 
 This example was for project \Sexpr{Project} and flight \Sexpr{Flight}. Note in the code that there is a step for interpolating to fill in short periods (up to 10 s) that otherwise would be missing values; that is the 'zoo::' command above. When there is no terrain but only ocean, the dataset did not include lat-long squares for those regions, so there are also missing-value regions over ocean that are not filled in. I think the remaining missing-value regions after interpolation to fill small gaps are mostly over ocean and could be replaced by zero, so for now I have done that to have better appearing plots.
 The flight track is shown in Fig.~\ref{fig:plot-flight-track}, and the altitude of the terrain below the aircraft is shown in Fig.~\ref{fig:plot-terrain-height} for one pass from that flight.
 
-<<plot-flight-track, fig.lp="fig:", fig.cap="The flight track for the GV on flight 12 of the DEEPWAVE project.", include=TRUE>>=
+<<plot-flight-track, fig.lp="fig:", fig.cap=FigCap1, include=TRUE>>=
 
 Z <- plotTrack (Data$LONC, Data$LATC, Data$Time, .Spacing=60, .WindFlags=2) 
 title (Flight) 
+FigCap2 <- sprintf ("The elevation of the terrain below the position of the aircraft during %s Flight %s", Project, Flight)
 
 
 @
 
 
-<<plot-terrain-height, echo=TRUE, include=TRUE, fig.lp="fig:", fig.cap="The elevation of the terrain below the position of the aircraft during a portion of NOMAADSS Flight 1.", fig.height=5>>=
+<<plot-terrain-height, echo=TRUE, include=TRUE, fig.lp="fig:", fig.cap=FigCap2, fig.height=5>>=
 
 #SFC[is.na(SFC)] <- 0 
 #r <- setRange(Data$Time, 82400,85200)
@@ -391,16 +410,17 @@ The result of this processing is a new netCDF file that duplicates the original 
 Acknowledgements:
 
 Data obtained from \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}, a database constructed by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. The analyses reported here were performed using R\footnote{R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/}, with RStudio\footnote{RStudio: Integrated development environment for R (Version 0.98.879) [Computer software]. Boston, MA. Available from http://www.rstudio.org/ (2009)} and knitr\footnote{Xie, Y. (2013), knitr: A general-purpose package for dynamic report generation in R. R package version 1.3. Version 1.6 was used for this work. See also Xie, Y (2014), Dynamic documents with R and knitr, CRC Press, Chapman and Hall, 190 pp.}. 
-\vfill\eject
+\bigskip
+
 Reproducibility:
 
 \begin{tabular}{ll}
-\textsf{\textsc{\textcolor{blue}{Project:}}} & \Sexpr{thisFileName}\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Project:}}} & HeightOfTerrain\tabularnewline
 \textsf{\textsc{\textcolor{blue}{Archive package:}}} & \Sexpr{thisFileName}.zip\tabularnewline
 \textsf{\textsc{\textcolor{blue}{Contains:}}} & attachment list below\tabularnewline
 \textsf{\textsc{\textcolor{blue}{Program:}}} & \Sexpr{thisFileName}.Rnw\tabularnewline
-\textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Flight}.nc \tabularnewline
-\textsf{\textsc{\textcolor{blue}{Git:}}} & git@github.com:WilliamCooper/\Sexpr{thisFileName}.git\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Project}\Sexpr{Flight}.nc \tabularnewline
+\textsf{\textsc{\textcolor{blue}{Git:}}} & git@github.com:WilliamCooper/HeightOfTerrain.git\tabularnewline
 \end{tabular}
 
 \attachm{\Sexpr{thisFileName}.Rnw\\\Sexpr{thisFileName}.pdf\\\Sexpr{SaveRData}\\SessionInfo}
