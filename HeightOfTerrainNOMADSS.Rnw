@@ -76,7 +76,7 @@
 
 library(knitr)
 library(RCurl)
-opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:")
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", size='small')
 opts_chunk$set(fig.width=6, fig.height=5, fig.pos="center", digits=4)
 thisFileName <- "HeightOfTerrainNOMADSS"
 require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
@@ -86,11 +86,10 @@ require(ggthemes)
 require(sm)
 require(plyr)
 Directory <- DataDirectory ()
-Flight <- "rf01" 		
+Flight <- "rf11" 		
 Project = "NOMADSS"	
-fname = sprintf("%s%s/%s%s.nc", Directory,Project,Project,Flight)
+fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
-
 @
 
 
@@ -144,8 +143,7 @@ which will retrieve the 'height' matrix for that lat/lon square. This is handled
 
 <<download-zip-files, echo=TRUE, include=TRUE, cache=TRUE>>=
 
-# there should be a subdirectory named 'TerrainData' 
-# under the main project directory 
+# there must be a subdirectory named 'TerrainData' 
 setwd ("./TerrainData")    # Save the data in a subdirectory 
 ###### next are the limits for the range to download
 ## each zip file contains 4 deg latitude x 6 deg longitude, for the source used
@@ -166,7 +164,7 @@ setwd ("./TerrainData")    # Save the data in a subdirectory
 # range for NOMADSS: had to download G13 to L19
 lt_s <- 24 # N
 lt_n <- 45 # N
-lg_w <- -106 # W -- used 106 vs 105 to get exactly 105 to work
+lg_w <- -106 # W -- used 106 to get exactly 105 to work
 lg_e <-  -72 # W
 ###### loop through the needed files
 for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf statement) 
@@ -175,11 +173,9 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
     ifelse (lg >= 0, EW <- 'E', EW <- 'W')
     sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
     dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
-#   print (sprintf("sname = %s", sname))
     if (file.exists(sname)) {   # Skip if file is already present 
       unlink (dname)  
     } else {
-#     print (sprintf("need file dname = %s", dname))
 # is it already there from a previous download?
       if (file.exists (dname)) {
         #                # 'swap' changes from big-endian to little-endian 
@@ -197,7 +193,7 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
         } else {
           zipFileName <- sprintf ("%s%02d.zip", LETTERS[lettr], numbr)
         }
-        sprintf(" needed zip file is %s", zipFileName)
+      # sprintf(" needed zip file is %s", zipFileName)
       # if it's already present, skip download
         if (!file.exists(zipFileName)) {
           url <- sprintf("http://www.viewfinderpanoramas.org/dem3/%s", zipFileName)
@@ -205,9 +201,6 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
             f = RCurl::CFILE(zipFileName, mode="wb")
             RCurl::curlPerform(url = url, writedata = f@ref)
             close(f)
-            #scommand <- sprintf("wget %s", url)
-            #print(scommand)
-            #system (scommand, wait=TRUE)
             unzip (zipFileName, junkpaths=TRUE)
             unlink (zipFileName)
             system (sprintf("touch %s", zipFileName))
@@ -218,7 +211,6 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
         }
       }
       if (file.exists(dname)) {
-#                # 'swap' changes from big-endian to little-endian 
         height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
         height [height == -32768] <- NA     # set missing values to NA
         dim (height) <- c(1201,1201)        # Make into a matrix 
@@ -229,7 +221,6 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
   } 
 }
 setwd("..")
-
 @
 
 The values in these data files are binary two-byte or 16-bit
@@ -247,21 +238,20 @@ step discussed later in this memo.
 HeightOfTerrain <- function (.lat, .long) { 
   lt <- as.integer (floor(.lat)) 
   lg <- as.integer (floor(.long)) 
-  if (is.na(lt)) {return (NA)} 
-  if (is.na(lg)) {return (NA)} 
+  if (is.na(lt) || is.na(lg)) {return (NA)} # beware of bad input
   if (lt < 0) { 
-    lNS <- "S" 
+    NS <- "S" 
     lt <- -lt 
   } else {
-    lNS <- "N" 
+    NS <- "N" 
   } 
   if (lg < 0) {
-    lEW <- "W" 
+    EW <- "W" 
     lg <- -lg 
   } else { 
-    lEW <- "E" 
+    EW <- "E" 
   } 
-  vname <- sprintf("Z%s%02d%s%03d", lNS, lt, lEW, lg) 
+  vname <- sprintf("Z%s%02d%s%03d", NS, lt, EW, lg) 
   if (!exists(vname, .GlobalEnv)) { 
     zfile <- sprintf("%s.gz", vname)
     if (file.exists(sprintf("./TerrainData/%s",zfile))) {
@@ -279,8 +269,6 @@ HeightOfTerrain <- function (.lat, .long) {
   hgt <- get(vname, envir=.GlobalEnv)[ix, iy] 
   return (hgt) 
 }
-## check this here: http://ned.usgs.gov/epqs/
-
 @
 
 \section*{Testing results against the USGS values}
@@ -291,20 +279,20 @@ The USGS provides a service where a user can obtain the height of terrain at a s
 
 require(RCurl)
 n <- 5000
-HOT <- vector("numeric", n)
-USGS <- vector("numeric", n)
-ltt <- runif(n, lt_s, lt_n)
-lgg <- runif(n, lg_w, lg_e)
+HOT <- vector ("numeric", n)
+USGS <- vector ("numeric", n)
+ltt <- runif (n, lt_s, lt_n)
+lgg <- runif (n, lg_w, lg_e)
 for (i in 1:n) {
-  HOT[i] <- HeightOfTerrain(ltt[i], lgg[i])
-  url <- sprintf("http://137.227.248.58/pqs.php?x=%f&y=%f&units=Meters&output=json", lgg[i], ltt[i])
-  USGS[i] <- as.numeric(strsplit(strsplit(RCurl::getURL(url), 'Elevation\":')[[1]][2], ',.*'))
+  HOT[i] <- HeightOfTerrain (ltt[i], lgg[i])
+  url <- sprintf ("http://137.227.248.58/pqs.php?x=%f&y=%f&units=Meters&output=json", lgg[i], ltt[i])
+  USGS[i] <- as.numeric (strsplit (strsplit (RCurl::getURL(url), 'Elevation\":')[[1]][2], ',.*'))
 }
 meanDiff <- mean (HOT-USGS, na.rm=TRUE)
 sdDiff <- sd (HOT-USGS, na.rm=TRUE)
-print(sprintf("mean difference: %f", meanDiff))
-print(sprintf("std dev: %f", sdDiff))
-hist(HOT-USGS, breaks=50, xlim=c(-10.,10.))
+print (sprintf ("mean difference: %f", meanDiff))
+print (sprintf ("std dev: %f", sdDiff))
+hist (HOT-USGS, breaks=50, xlim=c(-10,10))
 @
 
 The mean difference from this comparison was
@@ -337,20 +325,22 @@ code that does this:
 <<add-variables-to-netCDF-file, echo=TRUE, include=TRUE>>=
 
 fname <- sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
-fnew <- sprintf("%s%s/%s%sZ.nc", DataDirectory (), Project, Project, Flight) 
+fnew <- sprintf("%s%s/%s%sWAC.nc", DataDirectory (), Project, Project, Flight) 
 # copy file to avoid changing original: note 'Z' in new file name
-file.copy (fname, fnew, overwrite=TRUE) #careful: will overwrite 'Z' file
+file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
 # load data needed to calculate the new variables:
-#   ... there is no GGALTB in NOMADSS files? What is GGALTC? Use GGALT
+#   ... there is no GGALTB in NOMADSS files? (What is GGALTC?) Use GGALT
 Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT")) 
-SFC <- vector ("numeric", length(Data$Time)) 
+SFC <- vector ("numeric", length (Data$Time)) 
 netCDFfile <- open.ncdf (fnew, write=TRUE) 
 # have to use a loop here because HeightOfTerrain looks
 # up and loads needed files so is not suited to vector ops
 for (i in 1:length (Data$Time)) {
-  if (is.na(Data$LATC[i])) {SFC[i] <- NA ; next} 
-  if (is.na(Data$LONC[i])) {SFC[i] <- NA ; next} 
-  SFC[i] <- HeightOfTerrain (Data$LATC[i], Data$LONC[i]) 
+  if (is.na (Data$LONC[i]) || is.na (Data$LATC[i])) {
+    SFC[i] <- NA
+  } else {
+    SFC[i] <- HeightOfTerrain (Data$LATC[i], Data$LONC[i]) 
+  }
 } 
 
 # replace missing values with interpolated values for gaps up to 10 s in length:
@@ -364,29 +354,39 @@ SaveRData <- "NOMADSSterrain.Rdata.gz"
 save(Data, file=SaveRData, compress="gzip")
 # load(file=SaveRData)
 
-<<modify-netCDF-file>>=
+<<modify-netCDF-file, tidy=TRUE, tidy.opts=list(width=60)>>=
 
-varSFC <- var.def.ncdf ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., "Elevation of the Earth's surface below the aircraft position, WGS-84") 
-varALTG <- var.def.ncdf ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., "Altitude of the aircraft above the Earth's surface, WGS-84")
-newfile <- var.add.ncdf (netCDFfile, varSFC) 
-newfile <- var.add.ncdf (newfile, varALTG) 
+varSFC <- var.def.ncdf ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., 
+                        "Elevation of the Earth's surface below the aircraft position, WGS-84") 
+varALTG <- var.def.ncdf ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., 
+                         "Altitude of the aircraft above the Earth's surface, WGS-84")
+newfile <- var.add.ncdf (netCDFfile, varSFC)
+att.put.ncdf (newfile, "SFC_SRTM", attname='DataSource', 
+              attval="viewfinderpanorama Jonathan de Ferranti")
+att.put.ncdf (newfile, "SFC_SRTM", attname="Category", attval="Position")
+att.put.ncdf (newfile, "SFC_SRTM", attname="Dependencies", attval="2 LATC LONC")
+minmax <- sprintf ("%.0f.f,%.0f.f", min (SFC, na.rm=TRUE), max (SFC, na.rm=TRUE))
+att.put.ncdf (newfile, "SFC_SRTM", attname="actual_range", attval=minmax)
+newfile <- var.add.ncdf (newfile, varALTG)
+att.put.ncdf (newfile, "ALTG_SRTM", attname="DataSource", attval="viewfinderpanorama Jonathan de Ferranti")
+att.put.ncdf (newfile, "ALTG_SRTM", attname="Category", attval="Position")
+att.put.ncdf (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALTB")
+minmax2 <- sprintf ("%.0f.f,%.0f.f", min (ALTG, na.rm=TRUE), max (ALTG, na.rm=TRUE))
+att.put.ncdf (newfile, "ALTG_SRTM", attname="actual_range", attval=minmax2) 
 put.var.ncdf (newfile, "SFC_SRTM", SFC) 
 put.var.ncdf (newfile, "ALTG_SRTM", ALTG) 
 close.ncdf (newfile)
 FigCap1 <- sprintf("The flight track for %s flight %s.", Project, Flight)
-
 @
 
 This example was for project \Sexpr{Project} and flight \Sexpr{Flight}. Note in the code that there is a step for interpolating to fill in short periods (up to 10 s) that otherwise would be missing values; that is the 'zoo::' command above. When there is no terrain but only ocean, the dataset did not include lat-long squares for those regions, so there are also missing-value regions over ocean that are not filled in. I think the remaining missing-value regions after interpolation to fill small gaps are mostly over ocean and could be replaced by zero, so for now I have done that to have better appearing plots.
-The flight track is shown in Fig.~\ref{fig:plot-flight-track}, and the altitude of the terrain below the aircraft is shown in Fig.~\ref{fig:plot-terrain-height} for one pass from that flight.
+The flight track is shown in Fig.~\ref{fig:plot-flight-track}, and the altitude of the terrain below the aircraft is shown in Fig.~\ref{fig:plot-terrain-height} for that flight.
 
 <<plot-flight-track, fig.lp="fig:", fig.cap=FigCap1, include=TRUE>>=
 
 Z <- plotTrack (Data$LONC, Data$LATC, Data$Time, .Spacing=60, .WindFlags=2) 
 title (Flight) 
-FigCap2 <- sprintf ("The elevation of the terrain below the position of the aircraft during %s Flight %s", Project, Flight)
-
-
+FigCap2 <- sprintf ("The elevation of the terrain below the position of the aircraft during %s Flight %s.", Project, Flight)
 @
 
 
@@ -396,22 +396,22 @@ FigCap2 <- sprintf ("The elevation of the terrain below the position of the airc
 #r <- setRange(Data$Time, 82400,85200)
 Z <- plotWAC (Data$Time, SFC, ylab="Terrain Elevation [m]") 
 title (Flight)
-
 @
 
 \section*{Considerations for routine implementation}
 
-The result of this processing is a new netCDF file that duplicates the original except for the addition of two variables, SFC\_SRTM and ALTG\_SRTM (respectively surface elevation and altitude above the ground). The netCDF file has an identifying 'Z' at the end of the name, in this case NOMADSSrf01Z.nc. If this is a desirable variable to include in production files, that could be done in two ways. The function used here, 'HeightOfTerrain (lat, long)', with appropriate communication tools can be called from C/C++ programs, so that may be the best way to get this variable into nimbus. Alternately, this program could be run on production files as a second-pass processor to add the variable as I have done here. Some additional changes will be needed because this version doesn't add all the variable attributes that are RAF convention. 
+The result of this processing is a new netCDF file that duplicates the original except for the addition of two variables, SFC\_SRTM and ALTG\_SRTM (respectively surface elevation and altitude above the ground). The netCDF file has an identifying 'Z' at the end of the name, in this case NOMADSSrf01Z.nc. (Beware: This program overwrites that file, if present, without warning.) If this is a desirable variable to include in production files, that could be done in two ways. The function used here, 'HeightOfTerrain (lat, long)', with appropriate communication tools can be called from C/C++ programs, so that may be the best way to get this variable into nimbus. Alternately, this program could be run on production files as a second-pass processor to add the variable as I have done here. 
+\bigskip
 
+Acknowledgements:
 
+\bigskip
+Data obtained from \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}, a database constructed by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. The analyses reported here were performed using R\footnote{R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/}, with RStudio\footnote{RStudio: Integrated development environment for R (Version 0.98.879) [Computer software]. Boston, MA. Available from http://www.rstudio.org/ (2009)} and knitr\footnote{Xie, Y. (2013), knitr: A general-purpose package for dynamic report generation in R. R package version 1.3. Version 1.6 was used for this work. See also Xie, Y (2014), Dynamic documents with R and knitr, CRC Press, Chapman and Hall, 190 pp.}. 
+\bigskip
 \begin{center}
 \textsf{\textcolor{blue}{-- End of Memo --}}
 \par\end{center}
-Acknowledgements:
-
-Data obtained from \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}, a database constructed by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. The analyses reported here were performed using R\footnote{R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/}, with RStudio\footnote{RStudio: Integrated development environment for R (Version 0.98.879) [Computer software]. Boston, MA. Available from http://www.rstudio.org/ (2009)} and knitr\footnote{Xie, Y. (2013), knitr: A general-purpose package for dynamic report generation in R. R package version 1.3. Version 1.6 was used for this work. See also Xie, Y (2014), Dynamic documents with R and knitr, CRC Press, Chapman and Hall, 190 pp.}. 
-\bigskip
-
+\vfill\eject
 Reproducibility:
 
 \begin{tabular}{ll}
@@ -429,11 +429,10 @@ Reproducibility:
 %\attachm{first\\second} %\cc{first attachment\\second\\3rd att}
 <<save-system-info, echo=FALSE>>= 
 cat (toLatex(sessionInfo()), file="SessionInfo")
-
 @ 
 <<make-zip-archive, echo=TRUE, INCLUDE=TRUE>>=
-system (sprintf("zip %s.zip %s.Rnw %s.pdf SessionInfo %s", thisFileName, thisFileName, thisFileName, SaveRData))
-
+system (sprintf("zip %s.zip %s.Rnw %s.pdf SessionInfo %s", thisFileName, 
+                thisFileName, thisFileName, SaveRData))
 @ 
 
 %\attach{attachment}
