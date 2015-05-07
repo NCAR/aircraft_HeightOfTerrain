@@ -74,6 +74,24 @@
 
 <<initialization,echo=FALSE,include=FALSE>>=
 
+writeLines("This script must be run from tikal as libraries aren't currently installed elsewhere")
+
+args <- commandArgs(trailingOnly = TRUE)
+Directory <- "/scr/raf/Prod_Data/"
+
+if (length(args) == 2) {
+   print("Using values from command line")
+   Flight <- args[2] ##rfxx
+   Project = args[1] ## project name in caps
+} else if (length(args) == 0) {
+   print("Using hardcoded values")
+   Flight <- "rf03" 		
+   Project = "FRAPPE"	
+} else {
+   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrainNOMADSS.R $project $flight")
+   quit()
+}
+
 library(knitr)
 library(RCurl)
 opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", size='small')
@@ -85,9 +103,8 @@ require(grid)
 require(ggthemes)
 require(sm)
 require(plyr)
-Directory <- DataDirectory ()
-Flight <- "rf11" 		
-Project = "NOMADSS"	
+require(ncdf)
+require(maps)
 fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
 @
@@ -254,6 +271,7 @@ HeightOfTerrain <- function (.lat, .long) {
   vname <- sprintf("Z%s%02d%s%03d", NS, lt, EW, lg) 
   if (!exists(vname, .GlobalEnv)) { 
     zfile <- sprintf("%s.gz", vname)
+    print (zfile)
     if (file.exists(sprintf("./TerrainData/%s",zfile))) {
       load(file=sprintf("./TerrainData/%s.gz", vname)) 
       assign (vname, height, envir=.GlobalEnv)
@@ -324,8 +342,8 @@ code that does this:
 
 <<add-variables-to-netCDF-file, echo=TRUE, include=TRUE>>=
 
-fname <- sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
-fnew <- sprintf("%s%s/%s%sWAC.nc", DataDirectory (), Project, Project, Flight) 
+fname <- sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
+fnew <- sprintf("%s%s/%s%sZ.nc", Directory, Project, Project, Flight) 
 # copy file to avoid changing original: note 'Z' in new file name
 file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
 # load data needed to calculate the new variables:

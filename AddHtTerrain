@@ -1,0 +1,17 @@
+#!/bin/sh
+
+Rscript -e "library(knitr); knitr::purl('HeightOfTerrainNOMADSS.Rnw')"
+
+if [ "$1" == "" ]; then
+   echo "Must include project name on command-line, e.g. AddHtTerrain FRAPPE"
+   exit
+fi
+
+project=$1
+echo "Adding Terrain Ht vars to production netCDF files for project $project"
+
+for file in `ls /scr/raf/Prod_Data/$project/${project}rf??.nc`
+do
+    flight=${file:(-7):4}
+    Rscript HeightOfTerrainNOMADSS.R $project $flight
+done
