@@ -62,12 +62,12 @@
 \begin{document}
 \EOLmemo 
 
-\global\addressee={NOMADSS Project File}  % >>change "File" to the "To:" name desired
+\global\addressee={Project File}  % >>change "File" to the "To:" name desired
 
 \begin{tabular}{ll}
 \textsf{\textsc{\textcolor{blue}{To:}}} & \the\addressee\tabularnewline
 \textsf{\textsc{\textcolor{blue}{From:}}} & Al Cooper\tabularnewline
-\textsf{\textsc{\textcolor{blue}{Subject:}}} & A new terrain-elevation variable for NOMADSS\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Subject:}}} & A new terrain-elevation variable for RAF datasets\tabularnewline
 \end{tabular}
 
 \bigskip
@@ -79,16 +79,30 @@ writeLines("This script must be run from tikal as libraries aren't currently ins
 args <- commandArgs(trailingOnly = TRUE)
 Directory <- "/scr/raf/Prod_Data/"
 
-if (length(args) == 2) {
+if (length(args) == 6) {
    print("Using values from command line")
-   Flight <- args[2] ##rfxx
    Project = args[1] ## project name in caps
+   Flight <- args[2] ##rfxx
+   lt_s <- args[3]
+   lt_n <- args[4]
+   lg_w <- args[5]
+   lg_e <- args[6]
 } else if (length(args) == 0) {
-   print("Using hardcoded values")
-   Flight <- "rf03" 		
-   Project = "FRAPPE"	
+   print("Using hardcoded values. Don't forget to change lat/lon!")
+   Flight <- "rf01" 		
+   Project = "DEEPWAVE"	
+   #range for DEEPWAVE
+   lt_s <- -60
+   lt_n <- -20 
+   lg_w <- 130 
+   lg_e <- -150 
+   # range for NOMADSS&FRAPPE: had to download G13 to L19
+   #lt_s <- 24 # N
+   #lt_n <- 45 # N
+   #lg_w <- -111 # W -- used 106 to get exactly 105 to work
+   #lg_e <-  -72 # W
 } else {
-   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrainNOMADSS.R $project $flight")
+   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrain.R $project $flight lt_s lt_n lg_w lg_e")
    quit()
 }
 
@@ -96,7 +110,7 @@ library(knitr)
 library(RCurl)
 opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", size='small')
 opts_chunk$set(fig.width=6, fig.height=5, fig.pos="center", digits=4)
-thisFileName <- "HeightOfTerrainNOMADSS"
+thisFileName <- "HeightOfTerrain"
 require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
 require(ggplot2)
 require(grid)
@@ -173,20 +187,16 @@ setwd ("./TerrainData")    # Save the data in a subdirectory
 ## for US, e.g., NOMADSS, indices are as follows:
 #      letter = LETTER[floor (lat/4) + 1]
 #      Nmbr = 30 + floor (lon/6) + 1
-#  from Janine: range is 24--45N and 105--72W for NOMADSS
-# lt_s <- 48    # limits for DEEPWAVE
-# lt_n <- 40 
-# lg_w <- 165 
-# lg_e <- 175 
-# range for NOMADSS: had to download G13 to L19
-lt_s <- 24 # N
-lt_n <- 45 # N
-lg_w <- -106 # W -- used 106 to get exactly 105 to work
-lg_e <-  -72 # W
 ###### loop through the needed files
 for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf statement) 
   ifelse (lt >= 0, NS <- 'N', NS <- 'S')
-  for (lg in lg_w:lg_e) {   # longitude limits (note 'E' or 'W') 
+  # Deal with crossing 180 -> -180
+  if (lg_w > lg_e) {
+    lrange = c(lg_w:180,-180:lg_e)
+  } else {
+    lrange = lg_w:lg_e
+  }
+  for (lg in lrange) {   # longitude limits (note 'E' or 'W') 
     ifelse (lg >= 0, EW <- 'E', EW <- 'W')
     sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
     dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
