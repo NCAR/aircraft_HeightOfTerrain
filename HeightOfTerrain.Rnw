@@ -117,7 +117,7 @@ require(grid)
 require(ggthemes)
 require(sm)
 require(plyr)
-require(ncdf)
+require(ncdf4)
 require(maps)
 fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
@@ -227,7 +227,7 @@ for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf stateme
           if (RCurl::url.exists (url, followlocation=FALSE)) { # there are false moved-URLs ...
             f = RCurl::CFILE(zipFileName, mode="wb")
             RCurl::curlPerform(url = url, writedata = f@ref)
-            close(f)
+            on.exit(close(f))
             unzip (zipFileName, junkpaths=TRUE)
             unlink (zipFileName)
             system (sprintf("touch %s", zipFileName))
@@ -360,7 +360,7 @@ file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
 #   ... there is no GGALTB in NOMADSS files? (What is GGALTC?) Use GGALT
 Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT")) 
 SFC <- vector ("numeric", length (Data$Time)) 
-netCDFfile <- open.ncdf (fnew, write=TRUE) 
+netCDFfile <- nc_open(fnew, write=TRUE) 
 # have to use a loop here because HeightOfTerrain looks
 # up and loads needed files so is not suited to vector ops
 for (i in 1:length (Data$Time)) {
@@ -384,26 +384,26 @@ save(Data, file=SaveRData, compress="gzip")
 
 <<modify-netCDF-file, tidy=TRUE, tidy.opts=list(width=60)>>=
 
-varSFC <- var.def.ncdf ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., 
+varSFC <- ncvar_def ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., 
                         "Elevation of the Earth's surface below the aircraft position, WGS-84") 
-varALTG <- var.def.ncdf ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., 
+varALTG <- ncvar_def ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., 
                          "Altitude of the aircraft above the Earth's surface, WGS-84")
-newfile <- var.add.ncdf (netCDFfile, varSFC)
-att.put.ncdf (newfile, "SFC_SRTM", attname='DataSource', 
+newfile <- ncvar_add (netCDFfile, varSFC)
+ncatt_put (newfile, "SFC_SRTM", attname='DataSource', 
               attval="viewfinderpanorama Jonathan de Ferranti")
-att.put.ncdf (newfile, "SFC_SRTM", attname="Category", attval="Position")
-att.put.ncdf (newfile, "SFC_SRTM", attname="Dependencies", attval="2 LATC LONC")
+ncatt_put (newfile, "SFC_SRTM", attname="Category", attval="Position")
+ncatt_put (newfile, "SFC_SRTM", attname="Dependencies", attval="2 LATC LONC")
 minmax <- sprintf ("%.0f.f,%.0f.f", min (SFC, na.rm=TRUE), max (SFC, na.rm=TRUE))
-att.put.ncdf (newfile, "SFC_SRTM", attname="actual_range", attval=minmax)
-newfile <- var.add.ncdf (newfile, varALTG)
-att.put.ncdf (newfile, "ALTG_SRTM", attname="DataSource", attval="viewfinderpanorama Jonathan de Ferranti")
-att.put.ncdf (newfile, "ALTG_SRTM", attname="Category", attval="Position")
-att.put.ncdf (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALTB")
+ncatt_put (newfile, "SFC_SRTM", attname="actual_range", attval=minmax)
+newfile <- ncvar_add (newfile, varALTG)
+ncatt_put (newfile, "ALTG_SRTM", attname="DataSource", attval="viewfinderpanorama Jonathan de Ferranti")
+ncatt_put (newfile, "ALTG_SRTM", attname="Category", attval="Position")
+ncatt_put (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALTB")
 minmax2 <- sprintf ("%.0f.f,%.0f.f", min (ALTG, na.rm=TRUE), max (ALTG, na.rm=TRUE))
-att.put.ncdf (newfile, "ALTG_SRTM", attname="actual_range", attval=minmax2) 
-put.var.ncdf (newfile, "SFC_SRTM", SFC) 
-put.var.ncdf (newfile, "ALTG_SRTM", ALTG) 
-close.ncdf (newfile)
+ncatt_put (newfile, "ALTG_SRTM", attname="actual_range", attval=minmax2) 
+ncvar_put (newfile, "SFC_SRTM", SFC) 
+ncvar_put (newfile, "ALTG_SRTM", ALTG) 
+nc_close (newfile)
 FigCap1 <- sprintf("The flight track for %s flight %s.", Project, Flight)
 @
 
