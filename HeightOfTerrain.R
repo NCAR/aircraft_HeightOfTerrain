@@ -1,6 +1,6 @@
 ## ----initialization,echo=FALSE,include=FALSE-----------------------------
 
-writeLines("This script must be run from tikal as libraries aren't currently installed elsewhere")
+writeLines("This script must be run from barolo as libraries aren't currently installed elsewhere")
 
 args <- commandArgs(trailingOnly = TRUE)
 Directory <- "/scr/raf/Prod_Data/"
@@ -13,6 +13,7 @@ if (length(args) == 6) {
    lt_n <- args[4]
    lg_w <- args[5]
    lg_e <- args[6]
+   Tdb <- args[7]
 } else if (length(args) == 0) {
    print("Using hardcoded values. Don't forget to change lat/lon!")
    Flight <- "rf01" 		
@@ -27,8 +28,9 @@ if (length(args) == 6) {
    #lt_n <- 45 # N
    #lg_w <- -111 # W -- used 106 to get exactly 105 to work
    #lg_e <-  -72 # W
+   Tdb <- "yes"
 } else {
-   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrain.R $project $flight lt_s lt_n lg_w lg_e")
+   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrain.R $project $flight lt_s lt_n lg_w lg_e Tdb")
    quit()
 }
 
@@ -47,84 +49,88 @@ require(ncdf4)
 require(maps)
 fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
-
+print(sprintf("Processing %s",fname))
 ## ----download-zip-files, echo=TRUE, include=TRUE, cache=TRUE-------------
-
-# there must be a subdirectory named 'TerrainData' 
-setwd ("./TerrainData")    # Save the data in a subdirectory 
-###### next are the limits for the range to download
-## each zip file contains 4 deg latitude x 6 deg longitude, for the source used
-#     (http://www.viewfinderpanoramas.org/dem3.html)
-#     Acknowledgement: Jonathan de Ferranti BA
-#                      Lochmill Farm
-#                      Newburgh, Fife, KY14 6EX, United Kingdom
-## Identifier for individual files is lat/lon at SE corner
-#  Identifier for zip files containing 4 x 6 individual files is [none/S]LetterNmbr where
-## for US, e.g., NOMADSS, indices are as follows:
-#      letter = LETTER[floor (lat/4) + 1]
-#      Nmbr = 30 + floor (lon/6) + 1
-###### loop through the needed files
-for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf statement) 
-  ifelse (lt >= 0, NS <- 'N', NS <- 'S')
-  # Deal with crossing 180 -> -180
-  if (lg_w > lg_e) {
-    lrange = c(lg_w:180,-180:lg_e)
-  } else {
-    lrange = lg_w:lg_e
-  }
-  for (lg in lrange) {   # longitude limits (note 'E' or 'W') 
-    ifelse (lg >= 0, EW <- 'E', EW <- 'W')
-    sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
-    dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
-    if (file.exists(sname)) {   # Skip if file is already present 
-      unlink (dname)  
-    } else {
-# is it already there from a previous download?
-      if (file.exists (dname)) {
-        #                # 'swap' changes from big-endian to little-endian 
-        height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
-        height [height == -32768] <- NA     # set NA for missing values 
-        dim (height) <- c(1201,1201)        # Make into a matrix 
-        save (height, file=sname, compress='gzip') 
-        unlink (dname) # delete the unzipped file 
-      } else {
-# find the database file that contains this:
-        lettr <- floor (lt %/% 4) + 1
-        numbr  <- 30 + floor (lg %/% 6) + 1
-        if (lt < 0) {
-          zipFileName <- sprintf ("S%s%02d.zip", LETTERS[1-lettr], numbr)
-        } else {
-          zipFileName <- sprintf ("%s%02d.zip", LETTERS[lettr], numbr)
-        }
-      # sprintf(" needed zip file is %s", zipFileName)
-      # if it's already present, skip download
-        if (!file.exists(zipFileName)) {
-          url <- sprintf("http://www.viewfinderpanoramas.org/dem3/%s", zipFileName)
-          if (RCurl::url.exists (url, followlocation=FALSE)) { # there are false moved-URLs ...
-            f = RCurl::CFILE(zipFileName, mode="wb")
-            RCurl::curlPerform(url = url, writedata = f@ref)
-            on.exit(close(f))
-            unzip (zipFileName, junkpaths=TRUE)
-            unlink (zipFileName)
-            system (sprintf("touch %s", zipFileName))
-            ## The reason for the preceding statement is to prevent trying to
-            ## download repeatedly in cases where the file is not present, for
-            ## example because it is entirely over ocean.
-          }
-        }
-      }
-      if (file.exists(dname)) {
-        height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
-        height [height == -32768] <- NA     # set missing values to NA
-        dim (height) <- c(1201,1201)        # Make into a matrix 
-        save (height, file=sname, compress='gzip') 
-        unlink (dname) # delete the unzipped file 
-      } 
-    } 
-  } 
+if (identical(Tdb,"yes")) {
+   # there must be a subdirectory named 'TerrainData' 
+   setwd ("./TerrainData")    # Save the data in a subdirectory 
+   ###### next are the limits for the range to download
+   ## each zip file contains 4 deg latitude x 6 deg longitude, for the source used
+   #     (http://www.viewfinderpanoramas.org/dem3.html)
+   #     Acknowledgement: Jonathan de Ferranti BA
+   #                      Lochmill Farm
+   #                      Newburgh, Fife, KY14 6EX, United Kingdom
+   ## Identifier for individual files is lat/lon at SE corner
+   #  Identifier for zip files containing 4 x 6 individual files is [none/S]LetterNmbr where
+   ## for US, e.g., NOMADSS, indices are as follows:
+   #      letter = LETTER[floor (lat/4) + 1]
+   #      Nmbr = 30 + floor (lon/6) + 1
+   ###### loop through the needed files
+   for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf statement) 
+     ifelse (lt >= 0, NS <- 'N', NS <- 'S')
+     # Deal with crossing 180 -> -180
+     if (lg_w > lg_e) {
+       lrange = c(lg_w:180,-180:lg_e)
+     } else {
+       lrange = lg_w:lg_e
+     }
+     for (lg in lrange) {   # longitude limits (note 'E' or 'W') 
+       ifelse (lg >= 0, EW <- 'E', EW <- 'W')
+       sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
+       dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
+       print (sname)
+       if (file.exists(sname)) {   # Skip if file is already present 
+         unlink (dname)  
+       } else {
+   # is it already there from a previous download?
+         if (file.exists (dname)) {
+           #                # 'swap' changes from big-endian to little-endian 
+           height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
+           height [height == -32768] <- NA     # set NA for missing values 
+           dim (height) <- c(1201,1201)        # Make into a matrix 
+           save (height, file=sname, compress='gzip') 
+           unlink (dname) # delete the unzipped file 
+         } else {
+   # find the database file that contains this:
+           lettr <- floor (lt %/% 4) + 1
+           numbr  <- 30 + floor (lg %/% 6) + 1
+           if (lt < 0) {
+             zipFileName <- sprintf ("S%s%02d.zip", LETTERS[1-lettr], numbr)
+           } else {
+             zipFileName <- sprintf ("%s%02d.zip", LETTERS[lettr], numbr)
+           }
+         # sprintf(" needed zip file is %s", zipFileName)
+         # if it's already present, skip download
+           if (!file.exists(zipFileName)) {
+             url <- sprintf("http://www.viewfinderpanoramas.org/dem3/%s", zipFileName)
+             if (RCurl::url.exists (url, followlocation=FALSE)) { # there are false moved-URLs ...
+               f = RCurl::CFILE(zipFileName, mode="wb")
+               RCurl::curlPerform(url = url, writedata = f@ref)
+               on.exit(close(f))
+               unzip (zipFileName, junkpaths=TRUE)
+               unlink (zipFileName)
+               system (sprintf("touch %s", zipFileName))
+               ## The reason for the preceding statement is to prevent trying to
+               ## download repeatedly in cases where the file is not present, for
+               ## example because it is entirely over ocean.
+             }
+           }
+         }
+         if (file.exists(dname)) {
+           height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
+           height [height == -32768] <- NA     # set missing values to NA
+           dim (height) <- c(1201,1201)        # Make into a matrix 
+           save (height, file=sname, compress='gzip') 
+           unlink (dname) # delete the unzipped file 
+         } 
+       } 
+     } 
+   }
+   setwd("..")
+   print("Done loading Terrain Database")
+} else {
+   print("Skip loading Terrain Database")
 }
-setwd("..")
-
 ## ----height-function, echo=TRUE, include=TRUE----------------------------
 
 HeightOfTerrain <- function (.lat, .long) { 
@@ -186,6 +192,7 @@ HeightOfTerrain <- function (.lat, .long) {
 
 fname <- sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 fnew <- sprintf("%s%s/%s%sZ.nc", Directory, Project, Project, Flight) 
+print(sprintf("Copy file %s to %s",fname,fnew))
 # copy file to avoid changing original: note 'Z' in new file name
 file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
 # load data needed to calculate the new variables:
@@ -204,7 +211,11 @@ for (i in 1:length (Data$Time)) {
 } 
 
 # replace missing values with interpolated values for gaps up to 10 s in length:
-SFC <- zoo::na.approx (SFC, maxgap=10, na.rm = FALSE) 
+# Check if have at least two non-NA values in SFC. If not, fill all NA's
+# with zeros.
+if (!all(is.na(SFC))) {
+    SFC <- zoo::na.approx (SFC, maxgap=10, na.rm = FALSE) 
+} 
 SFC[is.na(SFC)] <- 0      # replace missing values with zero; mostly ocean pts
 ALTG <- Data$GGALT - SFC 
 Data["SFC_SRTM"] <- SFC   # add new variable to data.frame
@@ -231,7 +242,7 @@ ncatt_put (newfile, "SFC_SRTM", attname="actual_range", attval=minmax)
 newfile <- ncvar_add (newfile, varALTG)
 ncatt_put (newfile, "ALTG_SRTM", attname="DataSource", attval="viewfinderpanorama Jonathan de Ferranti")
 ncatt_put (newfile, "ALTG_SRTM", attname="Category", attval="Position")
-ncatt_put (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALTB")
+ncatt_put (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALT")
 minmax2 <- sprintf ("%.0f.f,%.0f.f", min (ALTG, na.rm=TRUE), max (ALTG, na.rm=TRUE))
 ncatt_put (newfile, "ALTG_SRTM", attname="actual_range", attval=minmax2) 
 ncvar_put (newfile, "SFC_SRTM", SFC) 
