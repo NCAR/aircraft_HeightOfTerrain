@@ -50,6 +50,7 @@ require(maps)
 fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
 print(sprintf("Processing %s",fname))
+
 ## ----download-zip-files, echo=TRUE, include=TRUE, cache=TRUE-------------
 if (identical(Tdb,"yes")) {
    # there must be a subdirectory named 'TerrainData' 
@@ -61,7 +62,8 @@ if (identical(Tdb,"yes")) {
    #                      Lochmill Farm
    #                      Newburgh, Fife, KY14 6EX, United Kingdom
    ## Identifier for individual files is lat/lon at SE corner
-   #  Identifier for zip files containing 4 x 6 individual files is [none/S]LetterNmbr where
+   #  Identifier for zip files containing 4 x 6 individual files is 
+   # [none/S]LetterNmbr where
    ## for US, e.g., NOMADSS, indices are as follows:
    #      letter = LETTER[floor (lat/4) + 1]
    #      Nmbr = 30 + floor (lon/6) + 1
@@ -78,7 +80,6 @@ if (identical(Tdb,"yes")) {
        ifelse (lg >= 0, EW <- 'E', EW <- 'W')
        sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
        dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
-       print (sname)
        if (file.exists(sname)) {   # Skip if file is already present 
          unlink (dname)  
        } else {
@@ -131,6 +132,7 @@ if (identical(Tdb,"yes")) {
 } else {
    print("Skip loading Terrain Database")
 }
+
 ## ----height-function, echo=TRUE, include=TRUE----------------------------
 
 HeightOfTerrain <- function (.lat, .long) { 
