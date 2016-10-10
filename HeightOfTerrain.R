@@ -5,7 +5,7 @@ writeLines("This script must be run from barolo as libraries aren't currently in
 args <- commandArgs(trailingOnly = TRUE)
 Directory <- "/scr/raf/Prod_Data/"
 
-if (length(args) == 6) {
+if (length(args) == 7) {
    print("Using values from command line")
    Project = args[1] ## project name in caps
    Flight <- args[2] ##rfxx
@@ -49,7 +49,7 @@ require(ncdf4)
 require(maps)
 fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
-print(sprintf("Processing %s",fname))
+print(sprintf("Processing %s %s",fname,Tdb))
 
 ## ----download-zip-files, echo=TRUE, include=TRUE, cache=TRUE-------------
 if (identical(Tdb,"yes")) {
