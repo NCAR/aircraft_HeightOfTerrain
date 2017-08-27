@@ -1,0 +1,1982 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\addressee} \global\addressee={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Memo to: \the\addressee \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\EOLmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Earth Observing Laboratory}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+\end_preamble
+\use_default_options false
+\begin_modules
+knitr
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding default
+\fontencoding global
+\font_roman "times" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize 12
+\spacing single
+\use_hyperref false
+\papersize letterpaper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 0
+\use_package mathdots 0
+\use_package mathtools 1
+\use_package mhchem 0
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.54cm
+\topmargin 3.54cm
+\rightmargin 2.54cm
+\bottommargin 2.54cm
+\headheight 1cm
+\headsep 2cm
+\footskip 0.5cm
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle fancy
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+EOLmemo 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+global
+\backslash
+addressee={QAtools File}  % >>change "File" to the "To:" name desired
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="3" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+To:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+the
+\backslash
+addressee
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+From:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Al Cooper
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Subject:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Adding terrain-elevation variables
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+
+\backslash
+bigskip
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<initialization,echo=FALSE,include=FALSE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+thisFileName <- "HeightOfTerrain"
+\end_layout
+
+\begin_layout Plain Layout
+
+require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
+\end_layout
+
+\begin_layout Plain Layout
+
+require(ggplot2)
+\end_layout
+
+\begin_layout Plain Layout
+
+require(grid)
+\end_layout
+
+\begin_layout Plain Layout
+
+library(knitr)
+\end_layout
+
+\begin_layout Plain Layout
+
+library(maps)
+\end_layout
+
+\begin_layout Plain Layout
+
+require(ggthemes)
+\end_layout
+
+\begin_layout Plain Layout
+
+# require(vioplot)
+\end_layout
+
+\begin_layout Plain Layout
+
+require(plyr)
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:")
+\end_layout
+
+\begin_layout Plain Layout
+
+opts_chunk$set(fig.width=6, fig.height=5, fig.align="center", digits=4)
+\end_layout
+
+\begin_layout Plain Layout
+
+Directory <- DataDirectory ()
+\end_layout
+
+\begin_layout Plain Layout
+
+Flight <- "rf12" 		
+\end_layout
+
+\begin_layout Plain Layout
+
+Project = "DEEPWAVE"	
+\end_layout
+
+\begin_layout Plain Layout
+
+fname = sprintf("%s%s/%s%s.nc", Directory,Project,Project,Flight)
+\end_layout
+
+\begin_layout Plain Layout
+
+SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+Instructions for the Height-of-Terrain Tab
+\end_layout
+
+\begin_layout Standard
+The height-of-terrain tab has code for adding two variables to netCDF files,
+ SFC that gives the height of the surface below the aircraft location (m
+ MSL) and ALTG giving the altitude of the aircraft above the surface.
+ SFC + ALTG = GGALT, the altitude as measured by the GPS receiver on the
+ aircraft.
+\end_layout
+
+\begin_layout Standard
+The controls for this tab allow you to select the project and flight (or
+ all flights, using the 
+\begin_inset Quotes eld
+\end_inset
+
+ALL
+\begin_inset Quotes erd
+\end_inset
+
+ checkbox).
+ Before this can run, it must download the terrain data if it is not already
+ present, and this will take as much as 10 min.
+ The program checks the range in latitude and longitude covered by the flight(s)
+ and downloads all the data needed to cover those locations.
+ The data source is described in detail below.
+ The result is a plot of the three variables {SFC, ALTG, GGALT} and a new
+ netCDF file with 'Z' appended to the name (e.g., CSETrf01Z.nc).
+ 
+\end_layout
+
+\begin_layout Section*
+The Source For Data
+\end_layout
+
+\begin_layout Standard
+During the Shuttle Radar Topography Mission (SRTM) of 2000,
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Farr, T.G., M.
+ Kobrick, 2000, Shuttle Radar Topography Mission produces a wealth of data,
+ Amer.
+ Geophys.
+ Union Eos, v.
+ 81, p.
+ 583-585.
+\end_layout
+
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Farr, T.
+ G., et al.
+ (2007), The Shuttle Radar Topography Mission, Rev.
+ Geophys., 45, RG2004, doi:10.1029/2005RG000183
+\end_layout
+
+\end_inset
+
+ the altitude of the Earth's surface was mapped from 56S to 60N latitude
+ with resolution of 3 arc-sec or about 90 m at the equator.
+ For the US and territories, the resolution was 1 arc-sec or about 30 m.
+ The data from this mission are archived at this web site: 
+\begin_inset CommandInset href
+LatexCommand href
+name "http://www.webgis.com/srtm3.html"
+target "http://www.webgis.com/srtm3.html"
+
+\end_inset
+
+.
+ The files can be download in individual files that span 1 degree by 1 degree.
+ Some files are missing because they are entirely over ocean, where the
+ values should be interpreted as zero.
+ The format of these files leads to the need for some processing that is
+ documented here.
+ 
+\end_layout
+
+\begin_layout Standard
+The R code that downloaded these files is in the 'chunk' of this document
+ called 'download-zip-files'.
+ Initially, this was tested for DEEPWAVE, for which the range downloaded
+ covered 40S to 48S and 165E to 175E.
+ After unzipping, the data set was about 115 MB.
+ The heights in the 3-arc-sec files are presented in 1201
+\begin_inset Formula $\times$
+\end_inset
+
+1201 arrays where the edges duplicate the values in the adjacent arrays.
+ The missing-value flag is -32768.
+ The format is row-major, i.e., the 1201 values for the first west-to-east
+ row are presented first, then the next row to the north, etc.
+ Because R is inherently column-major, there are some aspects of indexing
+ in the code provided here that have indices reversed from what might have
+ been expected.
+ The unpacked files have 2,884,802 bytes.
+ 
+\end_layout
+
+\begin_layout Standard
+The reference location for each 1-degree by 1-degree array is the name of
+ the individual file (e.g., "S43E173.hgt" has a reference position of 43
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$^{
+\backslash
+circ}$
+\end_layout
+
+\end_inset
+
+S and 173
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+$^{
+\backslash
+circ}$
+\end_layout
+
+\end_inset
+
+E at the center of the lower left element of the array).
+ The values give the height in meters above the WGS84/EGM96 geoid.
+ The measurement uncertainty was about 9 m at 90% confidence
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+The standard uncertainty would be about 5 m.
+\end_layout
+
+\end_inset
+
+ (Farr et al.~2007), but there are some biases.
+ The SAR-radar technique did not penetrate fully through vegetation and
+ so might reflect the top of the vegetation canopy or some level intermediate
+ between the canopy and the surface, and the radar penetrated a few meters
+ into snow and so measured a height between the snow cover and the terrain
+ (as measured in Feb.
+\begin_inset space ~
+\end_inset
+
+2000).
+ Also, there are some gaps, especially in mountainous areas.
+\end_layout
+
+\begin_layout Standard
+Below, R code that downloads, unzips, and reads the data files is listed.
+ The entire-Earth dataset would require about 25 GB to store, so the download
+ should be limited in area to the region of the project.
+ Here the data files are saved in Rdata-format gzipped files suitable for
+ loading via commands like "load(file='XS40E170.gz')", which will retrieve
+ the 'height' matrix for that lat/lon square.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<download-zip-files, echo=FALSE, eval=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+# there should be a subdirectory named 'TerrainData' 
+\end_layout
+
+\begin_layout Plain Layout
+
+# under the main project directory 
+\end_layout
+
+\begin_layout Plain Layout
+
+## next line commented and code changed to use TerrainData.
+\end_layout
+
+\begin_layout Plain Layout
+
+## Reason: otherwise, knitr problems arise from changing wd
+\end_layout
+
+\begin_layout Plain Layout
+
+# setwd ("./TerrainData")    # Save the data in a subdirectory 
+\end_layout
+
+\begin_layout Plain Layout
+
+newSRTM <- FALSE  ## the below lines are saved to record how the saved file
+ was made:
+\end_layout
+
+\begin_layout Plain Layout
+
+subdirs <- c('Islands', 'North_America', 'South_America', 'Eurasia', 'Africa',
+ 'Australia')
+\end_layout
+
+\begin_layout Plain Layout
+
+if (newSRTM) {
+\end_layout
+
+\begin_layout Plain Layout
+
+  SRTMdata <- list()
+\end_layout
+
+\begin_layout Plain Layout
+
+  for (subd in subdirs) {
+\end_layout
+
+\begin_layout Plain Layout
+
+    url <- sprintf('https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s/', subd)
+\end_layout
+
+\begin_layout Plain Layout
+
+    FLS <- RCurl::getURL(url, dirlistonly=TRUE)
+\end_layout
+
+\begin_layout Plain Layout
+
+    fls <- strsplit (FLS, '<.*?zip
+\backslash
+
+\backslash
+">')
+\end_layout
+
+\begin_layout Plain Layout
+
+    fls <- as.vector(fls[[1]])
+\end_layout
+
+\begin_layout Plain Layout
+
+    SRTMdata[[sprintf('%s', subd)]]=fls
+\end_layout
+
+\begin_layout Plain Layout
+
+  }
+\end_layout
+
+\begin_layout Plain Layout
+
+  save(SRTMdata, file='SRTM.Rdata')
+\end_layout
+
+\begin_layout Plain Layout
+
+} else {
+\end_layout
+
+\begin_layout Plain Layout
+
+  load('SRTM.Rdata')  ## this loads SRTMdata
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+###### next are the limits for the range to download
+\end_layout
+
+\begin_layout Plain Layout
+
+lt_s <- -48 
+\end_layout
+
+\begin_layout Plain Layout
+
+lt_n <- -40 
+\end_layout
+
+\begin_layout Plain Layout
+
+lg_w <- 165 
+\end_layout
+
+\begin_layout Plain Layout
+
+lg_e <- 175 
+\end_layout
+
+\begin_layout Plain Layout
+
+###### loop through the needed files
+\end_layout
+
+\begin_layout Plain Layout
+
+for (lt in lt_s:lt_n) {    # latitude limits (note 'S' or 'N' in sprintf
+ statement) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  for (lg in lg_w:lg_e) {   # longitude limits (note 'E' or 'W') 
+\end_layout
+
+\begin_layout Plain Layout
+
+    if (lt <= 0) {
+\end_layout
+
+\begin_layout Plain Layout
+
+      if (lg >= 0) {
+\end_layout
+
+\begin_layout Plain Layout
+
+        sname <- sprintf ('ZS%dE%03d.gz', -lt, lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+        dname <- sprintf ("S%dE%03d.hgt", -lt, lg) # a sq.
+ degree of data 
+\end_layout
+
+\begin_layout Plain Layout
+
+      } else {
+\end_layout
+
+\begin_layout Plain Layout
+
+        sname <- sprintf ('ZS%dW%03d.gz', -lt, -lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+        dname <- sprintf ("S%dW%03d.hgt", -lt, -lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+      }
+\end_layout
+
+\begin_layout Plain Layout
+
+    } else {
+\end_layout
+
+\begin_layout Plain Layout
+
+      if (lg >= 0) {
+\end_layout
+
+\begin_layout Plain Layout
+
+        sname <- sprintf ('ZN%dE%03d.gz', lt, lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+        dname <- sprintf ("N%dE%03d.hgt", lt, lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+      } else {
+\end_layout
+
+\begin_layout Plain Layout
+
+        sname <- sprintf ('ZN%dW%03d.gz', lt, -lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+        dname <- sprintf ("N%dW%03d.hgt", lt, -lg)
+\end_layout
+
+\begin_layout Plain Layout
+
+      }
+\end_layout
+
+\begin_layout Plain Layout
+
+    }
+\end_layout
+
+\begin_layout Plain Layout
+
+    if (!file.exists(sprintf ('TerrainData/%s', sname))) {   # Skip if file
+ is already present 
+\end_layout
+
+\begin_layout Plain Layout
+
+      ## search everything! (inefficient, but files are saved once found)
+\end_layout
+
+\begin_layout Plain Layout
+
+      for (subd in subdirs) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+        ## check if needed file is in this subdirectory; skip if not
+\end_layout
+
+\begin_layout Plain Layout
+
+        if (sprintf (' %s.zip', dname) %in% SRTMdata[[subd]]) {   
+\end_layout
+
+\begin_layout Plain Layout
+
+          url <- sprintf ("https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s/%s.zip",
+ subd, dname) 
+\end_layout
+
+\begin_layout Plain Layout
+
+          if (RCurl::url.exists (url)) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+            system (sprintf ("wget %s -P TerrainData", url), wait=TRUE)
+ # wget call to do the download 
+\end_layout
+
+\begin_layout Plain Layout
+
+            utils::unzip(sprintf("TerrainData/%s.zip", dname), exdir='TerrainData
+') # and unzip 
+\end_layout
+
+\begin_layout Plain Layout
+
+                                            # then read the whole deg x
+ deg array
+\end_layout
+
+\begin_layout Plain Layout
+
+               # 'swap' changes from big-endian to little-endian 
+\end_layout
+
+\begin_layout Plain Layout
+
+            height <- readBin (sprintf ('TerrainData/%s', dname), 'int',
+ size=2, n=1201*1201, endian='swap')
+\end_layout
+
+\begin_layout Plain Layout
+
+            height [height == -32768] <- NA     # set NA for missing values
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+            dim (height) <- c(1201,1201)        # Make into a matrix 
+\end_layout
+
+\begin_layout Plain Layout
+
+            save (height, file=sprintf ('TerrainData/%s', sname), compress='gzip
+') 
+\end_layout
+
+\begin_layout Plain Layout
+
+            unlink (sprintf("TerrainData/%s.zip", dname)) # delete the zip
+ file 
+\end_layout
+
+\begin_layout Plain Layout
+
+            unlink (sprintf ('TerrainData/%s', dname)) # and the unzipped
+ file 
+\end_layout
+
+\begin_layout Plain Layout
+
+          }
+\end_layout
+
+\begin_layout Plain Layout
+
+        }
+\end_layout
+
+\begin_layout Plain Layout
+
+      } 
+\end_layout
+
+\begin_layout Plain Layout
+
+    } 
+\end_layout
+
+\begin_layout Plain Layout
+
+  } 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The first problem was that the values are binary two-byte or 16-bit signed
+ integers and are in big-endian format (most significant byte first) while
+ our processing machines are mostly little-endian, so a byte-swapping conversion
+ is necessary.
+ This was readily performed by the R reading function 'readBin', as illustrated
+ in the preceding code chunk.
+ It was useful to construct a function that would return the terrain altitude
+ for a given latitud
+\backslash
+attachm{
+\backslash
+Sexpr{thisFileName}.Rnw
+\backslash
+
+\backslash
+
+\backslash
+Sexpr{thisFileName}.pdf
+\backslash
+
+\backslash
+
+\backslash
+Sexpr{SaveRData}
+\backslash
+
+\backslash
+SessionInfo}
+\end_layout
+
+\begin_layout Standard
+%
+\backslash
+cc{first attachment
+\backslash
+
+\backslash
+second
+\backslash
+
+\backslash
+3rd att}
+\end_layout
+
+\begin_layout Standard
+%
+\backslash
+attach{attachment}
+\end_layout
+
+\begin_layout Standard
+%
+\backslash
+attachm{first
+\backslash
+
+\backslash
+second} %
+\backslash
+cc{first attachment
+\backslash
+
+\backslash
+second
+\backslash
+
+\backslash
+3rd att}e and longitude, so that function is shown in the next chunk:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<height-function, echo=TRUE, include=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+HeightOfTerrain <- function (.lat, .long) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+  lt <- as.integer (.lat) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  lg <- as.integer (.long) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (is.na(lt)) {return (NA)} 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (is.na(lg)) {return (NA)} 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (lt < 0) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+    lNS <- "S" 
+\end_layout
+
+\begin_layout Plain Layout
+
+    lt <- -lt 
+\end_layout
+
+\begin_layout Plain Layout
+
+  } else {
+\end_layout
+
+\begin_layout Plain Layout
+
+    lNS <- "N" 
+\end_layout
+
+\begin_layout Plain Layout
+
+  } 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (lg < 0) {
+\end_layout
+
+\begin_layout Plain Layout
+
+    lEW <- "W" 
+\end_layout
+
+\begin_layout Plain Layout
+
+    lg <- -lg + 1 
+\end_layout
+
+\begin_layout Plain Layout
+
+  } else { 
+\end_layout
+
+\begin_layout Plain Layout
+
+    lEW <- "E" 
+\end_layout
+
+\begin_layout Plain Layout
+
+  } 
+\end_layout
+
+\begin_layout Plain Layout
+
+  vname <- sprintf("TerrainData/Z%s%d%s%03d", lNS, lt+1, lEW, lg) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (!exists(vname, .GlobalEnv)) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+    zfile <- sprintf("%s.gz", vname) 
+\end_layout
+
+\begin_layout Plain Layout
+
+    if (file.exists(zfile)) { 
+\end_layout
+
+\begin_layout Plain Layout
+
+      load(file=sprintf("%s.gz", vname)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+      assign (vname, height, envir=.GlobalEnv) 
+\end_layout
+
+\begin_layout Plain Layout
+
+    } else { 
+\end_layout
+
+\begin_layout Plain Layout
+
+      return (NA) 
+\end_layout
+
+\begin_layout Plain Layout
+
+    } 
+\end_layout
+
+\begin_layout Plain Layout
+
+    } 
+\end_layout
+
+\begin_layout Plain Layout
+
+    ix <- as.integer ((.long - floor (.long) + 1/2400) * 1200) + 1 
+\end_layout
+
+\begin_layout Plain Layout
+
+    iy <- as.integer ( (.lat - floor (.lat) + 1/2400) * 1200) + 1 
+\end_layout
+
+\begin_layout Plain Layout
+
+    hgt <- get(vname, envir=.GlobalEnv)[ix, iy] 
+\end_layout
+
+\begin_layout Plain Layout
+
+    return (hgt) 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+A netCDF terrain-height variable
+\end_layout
+
+\begin_layout Standard
+For a netCDF file, it is then possible to define new variables that represent
+ the elevation of the terrain that is below the aircraft and also the height
+ of the aircraft above the terrain.
+ For example, here is code that does this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<add-variables-to-netCDF-file, echo=TRUE, include=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+Project <- "DEEPWAVE" 
+\end_layout
+
+\begin_layout Plain Layout
+
+Flight <- "rf12" 
+\end_layout
+
+\begin_layout Plain Layout
+
+fname <- sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
+\end_layout
+
+\begin_layout Plain Layout
+
+fnew <- sprintf("%s%s/%s%sZ.nc", DataDirectory (), Project, Project, Flight)
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+# copy file to avoid changing original: 
+\end_layout
+
+\begin_layout Plain Layout
+
+file.copy (fname, fnew, overwrite=TRUE) 
+\end_layout
+
+\begin_layout Plain Layout
+
+# load data needed to calculate the new variables:
+\end_layout
+
+\begin_layout Plain Layout
+
+## Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT", "GGEOIDHT")) 
+\end_layout
+
+\begin_layout Plain Layout
+
+Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT"))  ## don't need GGEOIDHT:
+ error in original ALTG 
+\end_layout
+
+\begin_layout Plain Layout
+
+SFC <- vector ("numeric", length(Data$Time)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+netCDFfile <- nc_open (fnew, write=TRUE) 
+\end_layout
+
+\begin_layout Plain Layout
+
+for (i in 1:length (Data$Time)) {
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (is.na(Data$LATC[i])) {next} 
+\end_layout
+
+\begin_layout Plain Layout
+
+  if (is.na(Data$LONC[i])) {next} 
+\end_layout
+
+\begin_layout Plain Layout
+
+  SFC[i] <- HeightOfTerrain (Data$LATC[i], Data$LONC[i]) 
+\end_layout
+
+\begin_layout Plain Layout
+
+  # if (i %in% 2000:2100) {sprintf("%f %f %f", SFC[i], Data$LATC[i], Data$LONC[i
+])} 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+SFC[is.na(SFC)] <- 0  ## assumed over ocean if missing
+\end_layout
+
+\begin_layout Plain Layout
+
+print (summary(SFC)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+print (TellAbout(SFC)) 
+\end_layout
+
+\begin_layout Plain Layout
+
+## ALTG <- Data$GGALT - Data$GGEOIDHT - SFC    ## error in original (DEEPWAVE)
+\end_layout
+
+\begin_layout Plain Layout
+
+Data$ALTG <- Data$GGALT - SFC 
+\end_layout
+
+\begin_layout Plain Layout
+
+Data$SFC <- SFC 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<modify-netCDF-file>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+varSFC <- ncvar_def ("SFC", "m", netCDFfile$dim["Time"], -32767., "Elevation
+ of the Earth's surface below the aircraft position") 
+\end_layout
+
+\begin_layout Plain Layout
+
+varALTG <- ncvar_def ("ALTG", "m", netCDFfile$dim["Time"], -32767., "Altitude
+ of the aircraft above the Earth's surface")
+\end_layout
+
+\begin_layout Plain Layout
+
+newfile <- ncvar_add (netCDFfile, varSFC) 
+\end_layout
+
+\begin_layout Plain Layout
+
+newfile <- ncvar_add (newfile, varALTG) 
+\end_layout
+
+\begin_layout Plain Layout
+
+ncvar_put (newfile, "SFC", Data$SFC) 
+\end_layout
+
+\begin_layout Plain Layout
+
+ncvar_put (newfile, "ALTG", Data$ALTG) 
+\end_layout
+
+\begin_layout Plain Layout
+
+nc_close (newfile)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This example was for project
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+ 
+\backslash
+Sexpr{Project}
+\end_layout
+
+\end_inset
+
+ and flight 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{Flight}
+\end_layout
+
+\end_inset
+
+.
+ The flight track is shown in Fig.~
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:plot-flight-track}
+\end_layout
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<plot-flight-track, include=TRUE, fig.cap="The flight track for the GV on
+ flight 12 of the DEEPWAVE project.">>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plotTrack (Data, .Spacing=60, .WindFlags=2) 
+\end_layout
+
+\begin_layout Plain Layout
+
+title (Flight) 
+\end_layout
+
+\begin_layout Plain Layout
+
+print (summary(SFC))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset space ~
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<plot-terrain-height, include=TRUE, fig.cap="The elevation of the terrain
+ below the position of the aircraft during Flight 12 of the DEEPWAVE project.">>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+plot (Data$Time, Data$ALTG, type='l', col='blue') 
+\end_layout
+
+\begin_layout Plain Layout
+
+lines (Data$Time, Data$GGALT, col='forestgreen')
+\end_layout
+
+\begin_layout Plain Layout
+
+lines (Data$Time, Data$SFC, col='brown')
+\end_layout
+
+\begin_layout Plain Layout
+
+title (Flight)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The altitude of the terrain below the aircraft is shown in Fig.~
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+ref{fig:plot-terrain-height}
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\align center
+
+\family sans
+\color blue
+– End of Memo –
+\end_layout
+
+\begin_layout Standard
+Reproducibility:
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+include enough info to re-run.
+ in zip, include program, pdf if not too big, and subset data, not entire
+ file.
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="0pt">
+<column alignment="left" valignment="top" width="0pt">
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Project:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{thisFileName}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Archive package:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{thisFileName}.zip
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Contains:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+attachment list below
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Program:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+Sexpr{thisFileName}.Rnw
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Original Data:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+/scr/raf
+\backslash
+_data/
+\backslash
+Sexpr{Project}/
+\backslash
+Sexpr{Flight}.nc
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family sans
+\shape smallcaps
+\color blue
+Git:
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+git@github.com:WilliamCooper/
+\backslash
+Sexpr{thisFileName}.git
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+attachm{
+\backslash
+Sexpr{thisFileName}.Rnw
+\backslash
+
+\backslash
+
+\backslash
+Sexpr{thisFileName}.pdf
+\backslash
+
+\backslash
+
+\backslash
+Sexpr{SaveRData}
+\backslash
+
+\backslash
+SessionInfo}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<save-system-info, echo=FALSE>>= 
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+cat (toLatex(sessionInfo()), file="SessionInfo")
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+<<make-zip-archive, echo=TRUE, INCLUDE=TRUE>>=
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+system (sprintf("zip %s.zip %s.Rnw %s.pdf SessionInfo %s", thisFileName, thisFileNa
+me, thisFileName, SaveRData))
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+@ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+%
+\backslash
+attach{attachment}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+attachm{ProgramFile
+\backslash
+
+\backslash
+Document.pdf
+\backslash
+
+\backslash
+SaveRData}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+%
+\backslash
+cc{first attachment
+\backslash
+
+\backslash
+second
+\backslash
+
+\backslash
+3rd att}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
