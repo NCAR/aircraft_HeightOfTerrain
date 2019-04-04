@@ -77,21 +77,23 @@
 writeLines("This script must be run from barolo as libraries aren't currently installed elsewhere")
 
 args <- commandArgs(trailingOnly = TRUE)
-Directory <- "/scr/raf/Prod_Data/"
+TdbData <- "/h/eol/janine/Rstudio/HeightOfTerrain/TerrainData"
 
-if (length(args) == 6) {
+if (length(args) == 8) {
    print("Using values from command line")
    Project = args[1] ## project name in caps
    Flight <- args[2] ##rfxx
-   lt_s <- args[3]
-   lt_n <- args[4]
-   lg_w <- args[5]
-   lg_e <- args[6]
-   Tdb <- args[7]
+   Directory <- args[3]
+   lt_s <- args[4]
+   lt_n <- args[5]
+   lg_w <- args[6]
+   lg_e <- args[7]
+   Tdb <- args[8]
 } else if (length(args) == 0) {
    print("Using hardcoded values. Don't forget to change lat/lon!")
    Flight <- "rf01" 		
    Project = "DEEPWAVE"	
+   Directory <- "/scr/raf/Prod_Data/$Project"
    #range for DEEPWAVE
    lt_s <- -60
    lt_n <- -20 
@@ -104,7 +106,10 @@ if (length(args) == 6) {
    #lg_e <-  -72 # W
    Tdb <- "yes"
 } else {
-   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name above and run. \n\t To use at the command line, give project name in caps and flight number with lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrain.R $project $flight lt_s lt_n lg_w lg_e Tdb")
+   writeLines("Usage: \n\tTo use in RStudio browser window, edit hard-coded flight and project name
+above and run. \n\t To use at the command line, give project name in caps and flight number with
+lower case [rtf] as command line arguments, e.g. \n\t\tRscript HeightOfTerrain.R $project $flight
+$Dir lt_s lt_n lg_w lg_e Tdb")
    quit()
 }
 
@@ -121,9 +126,9 @@ require(sm)
 require(plyr)
 require(ncdf4)
 require(maps)
-fname = sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
+fname = sprintf("%s/%s%s.nc", Directory,Project, Flight)
 SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
-print(sprintf("Processing %s",fname))
+print(sprintf("Processing %s %s",fname,Tdb))
 @
 
 
@@ -178,7 +183,7 @@ which will retrieve the 'height' matrix for that lat/lon square. This is handled
 <<download-zip-files, echo=TRUE, include=TRUE, cache=TRUE>>=
 if (identical(Tdb,"yes")) {
    # there must be a subdirectory named 'TerrainData' 
-   setwd ("./TerrainData")    # Save the data in a subdirectory 
+   setwd (TdbData)    # Save the data in a subdirectory 
    ###### next are the limits for the range to download
    ## each zip file contains 4 deg latitude x 6 deg longitude, for the source used
    #     (http://www.viewfinderpanoramas.org/dem3.html)
@@ -251,7 +256,7 @@ if (identical(Tdb,"yes")) {
        } 
      } 
    }
-   setwd("..")
+   setwd(".")
    print("Done loading Terrain Database")
 } else {
    print("Skip loading Terrain Database")
@@ -290,8 +295,8 @@ HeightOfTerrain <- function (.lat, .long) {
   if (!exists(vname, .GlobalEnv)) { 
     zfile <- sprintf("%s.gz", vname)
     print (zfile)
-    if (file.exists(sprintf("./TerrainData/%s",zfile))) {
-      load(file=sprintf("./TerrainData/%s.gz", vname)) 
+    if (file.exists(sprintf("%s/%s",TdbData,zfile))) {
+      load(file=sprintf("%s/%s.gz", TdbData,vname)) 
       assign (vname, height, envir=.GlobalEnv)
     } else { 
       return (NA) 
@@ -360,8 +365,8 @@ code that does this:
 
 <<add-variables-to-netCDF-file, echo=TRUE, include=TRUE>>=
 
-fname <- sprintf("%s%s/%s%s.nc", Directory, Project, Project, Flight)
-fnew <- sprintf("%s%s/%s%sZ.nc", Directory, Project, Project, Flight) 
+fname <- sprintf("%s/%s%s.nc", Directory, Project, Flight)
+fnew <- sprintf("%s/%s%sZ.nc", Directory, Project, Flight) 
 print(sprintf("Copy file %s to %s",fname,fnew))
 # copy file to avoid changing original: note 'Z' in new file name
 file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
@@ -390,7 +395,7 @@ SFC[is.na(SFC)] <- 0      # replace missing values with zero; mostly ocean pts
 ALTG <- Data$GGALT - SFC 
 Data["SFC_SRTM"] <- SFC   # add new variable to data.frame
 Data["ALTG_SRTM"] <- ALTG
-SaveRData <- "NOMADSSterrain.Rdata.gz"
+SaveRData <- "terrain.Rdata.gz"
 # comment one of these
 save(Data, file=SaveRData, compress="gzip")
 # load(file=SaveRData)
