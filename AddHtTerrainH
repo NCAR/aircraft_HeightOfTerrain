@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# This script needs to be run from run_all so ${DAT} will be set. Else, at the command line
+# "setenv DAT ${DATA_DIR}/WECAN"
+homedir=~
+Rscript -e "library(knitr); knitr::purl('$homedir/Rstudio/HeightOfTerrain/HeightOfTerrain.Rnw')"
+
+project="WECAN"
+Directory="${DAT}"
+lt_s="35"
+lt_n="49"
+lg_w="-125"
+lg_e="-100"
+Tdb="yes"
+# Set Tdb to yes the first time this is run to download the Terrain database.
+# Set to no after first run to save time.
+
+echo "Adding Terrain Ht vars to production netCDF files for project $project"
+echo "Using lat/long range $lt_s - $lt_n, $lg_w - $lg_e"
+
+for file in `ls $Directory/${project}[rtf]f??h.nc`
+do
+    flight=${file:(-7):4}
+    echo "Rscript ./HeightOfTerrain.R $project $flight $Directory $lt_s $lt_n $lg_w $lg_e $Tdb"
+#    Rscript ./HeightOfTerrain.R $project $flight $Directory $lt_s $lt_n $lg_w $lg_e $Tdb
+done
