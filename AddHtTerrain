@@ -1,22 +1,35 @@
-#!/bin/sh
+#!/bin/csh
 #
 # This script needs to be run from run_all so ${DAT} will be set. Else, at the command line
 # "setenv DAT ${DATA_DIR}/WECAN"
-homedir=~
+set DAT=/scr/raf/local_data/SOCRATES
+set homedir=~
 Rscript -e "library(knitr); knitr::purl('$homedir/Rstudio/HeightOfTerrain/HeightOfTerrain.Rnw')"
 
-project="WECAN"
-Directory="${DAT}"
-lt_s="35"
-lt_n="49"
-lg_w="-125"
-lg_e="-100"
-Tdb="yes"
+set project=SOCRATES
+set Directory=${DAT}
+
+# Default lat/lon to roughly Colorado. Must be set for each project. This is
+# the area for which the Terrain database will be downloaded. Set to minimum
+# area needed to speed up processing and save disk space.
+set area=`flt_area ${DAT}/${project}[rt]f??.nc | tail -4`
+set lt_s=(`printf '%.0f' $area[6]`)
+set lt_n=(`printf '%.0f' $area[3]`)
+set lg_w=(`printf '%.0f' $area[9]`)
+set lg_e=(`printf '%.0f' $area[12]`)
+
 # Set Tdb to yes the first time this is run to download the Terrain database.
 # Set to no after first run to save time.
+set Tdb="yes"
 
-echo "Adding Terrain Ht vars to production netCDF files for project $project"
-echo "Using lat/long range $lt_s - $lt_n, $lg_w - $lg_e"
+# Expand everything out a degree to ensure we don't loose any edge data.
+set lt_s = (`expr $lt_s - 1`)
+set lt_n = (`expr $lt_n + 1`)
+set lg_w = (`expr $lg_w - 1`)
+set lg_e = (`expr $lg_e + 1`)
+
+echo 'Adding Terrain Ht vars to netCDF files in '${DAT}' for project '$project
+echo 'Using lat/long range '${lt_s}' - '${lt_n}', '${lg_w}' - '${lg_e}
 
 for file in `ls $Directory/${project}[rtf]f??.nc`
 do
