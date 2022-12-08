@@ -4,7 +4,8 @@
 Variable names should be SFC_SRTM and ALTG_SRTM to document the reference sfc altitude database used.
 
 For instructions on how to use this code:
-http://wiki.eol.ucar.edu/rafscience/Aircraft%20Altitude%20from%20Pressure%20Alt%20and%20Terrain%20Ht
+
+https://wiki.ucar.edu/display/RS/Aircraft+Altitude+from+Pressure+Alt+and+Terrain+Ht
 
 To run HeightOfTerrain:
 - go to tikal.eol.ucar.edu in a browser and login with tikal pwd
