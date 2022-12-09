@@ -3,19 +3,21 @@
 
 Variable names should be SFC_SRTM and ALTG_SRTM to document the reference sfc altitude database used.
 
-For instructions on how to use this code:
+Detailed instructions on the history and use of this code are on the wiki:
 
-https://wiki.ucar.edu/display/RS/Aircraft+Altitude+from+Pressure+Alt+and+Terrain+Ht
+https://github.com/NCAR/aircraft_HeightOfTerrain/wiki
 
 To run HeightOfTerrain:
-- go to tikal.eol.ucar.edu in a browser and login with tikal pwd
+
 > Rscript -e "library(knitr); knit('HeightOfTerrainNOMADSS.Rnw’)"
 
 — or —
 
 > Rscript -e "library(knitr); knitr::purl('HeightOfTerrainNOMADSS.Rnw')"
+
 > R CMD BATCH HeightOfTerrainNOMADSS.R
 
 To run from the command line you must include the project and flight as
 options:
-Rscript HeightOfTerrainNOMADSS.R FRAPPE rf04
+
+> Rscript HeightOfTerrainNOMADSS.R FRAPPE rf04
