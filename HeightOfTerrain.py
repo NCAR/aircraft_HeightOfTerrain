@@ -169,23 +169,22 @@ def main():
     SFC[np.isnan(SFC)] = 0
     ALTG = GGALT - SFC
 
-    nc_data.createVariable('SFC_SRTM', 'f4', ('Time',))
-    nc_data.createVariable('ALTG_SRTM', 'f4', ('Time',))
+    nc_data.createVariable('SFC_SRTM', 'f4', ('Time',), fill_value=-9999)
+    nc_data.createVariable('ALTG_SRTM', 'f4', ('Time',), fill_value=-9999)
 
     nc_data.variables['SFC_SRTM'][:] = SFC
     nc_data.variables['ALTG_SRTM'][:] = ALTG
-
+    nc_data.variables['SFC_SRTM'].setncattr('long_name', "Elevation of the Earth's surface below the aircraft position, WGS-84")
     nc_data.variables['SFC_SRTM'].setncattr('DataSource', 'viewfinderpanorama Jonathan de Ferranti')
-    nc_data.variables['SFC_SRTM'].setncattr('Category', 'Position')
+    nc_data.variables['SFC_SRTM'].setncattr('Category', 'NavPosition')
     nc_data.variables['SFC_SRTM'].setncattr('Dependencies', '2 LATC LONC')
     minmax = f"{np.nanmin(SFC):.0f}f,{np.nanmax(SFC):.0f}f"
     nc_data.variables['SFC_SRTM'].setncattr('actual_range', minmax)
     nc_data.variables['SFC_SRTM'].setncattr('units', 'm')
-    nc_data.variables['SFC_SRTM'].setncattr('missing_value', -9999)
+    nc_data.variables['ALTG_SRTM'].setncattr('long_name', "Altitude of the aircraft above the Earth's surface, WGS-84")
     nc_data.variables['ALTG_SRTM'].setncattr('DataSource', 'viewfinderpanorama Jonathan de Ferranti')
-    nc_data.variables['ALTG_SRTM'].setncattr('Category', 'Position')
+    nc_data.variables['ALTG_SRTM'].setncattr('Category', 'NavPosition')
     nc_data.variables['ALTG_SRTM'].setncattr('units', 'm')
-    nc_data.variables['ALTG_SRTM'].setncattr('missing_value', -9999)
     nc_data.variables['ALTG_SRTM'].setncattr('Dependencies', '2 SFC_SRTM GGALT')
     minmax2 = f"{np.nanmin(ALTG):.0f}f,{np.nanmax(ALTG):.0f}f"
     nc_data.variables['ALTG_SRTM'].setncattr('actual_range', minmax2)

@@ -32,5 +32,5 @@ for file in ${Directory}/${project}[rtf]f??.nc; do
     flight=$(basename ${file} | grep -oP '[rtf]f\d{2}')
     echo "python ./HeightOfTerrain.py ${project} ${flight} ${Directory} ${lt_s} ${lt_n} ${lg_w} ${lg_e} ${Tdb}"
     # Uncomment the following line to actually run the script
-    python ./HtOfTerrain.py ${project} ${flight} ${Directory} ${lt_s} ${lt_n} ${lg_w} ${lg_e} ${Tdb}
+    python ./HeightOfTerrain.py ${project} ${flight} ${Directory} ${lt_s} ${lt_n} ${lg_w} ${lg_e} ${Tdb}
 done
