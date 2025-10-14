@@ -1,5 +1,6 @@
+#! /usr/bin/env python3
+
 import os
-import sys
 import gzip
 import zipfile
 import urllib.request
@@ -7,12 +8,11 @@ import numpy as np
 import pandas as pd
 import netCDF4
 from scipy.interpolate import interp1d
-import matplotlib.pyplot as plt
 import datetime
 import argparse
 
 # Configuration
-TdbData = "./TerrainData"
+TdbData = "/scr/raf_data/TerrainData" 
 thisFileName = "HeightOfTerrain"
 
 def datetoday():
@@ -35,6 +35,9 @@ def parse_args():
     return parser.parse_args()
 
 def HeightOfTerrain(lat, lon):
+    # Check for masked values
+    if np.ma.is_masked(lat) or np.ma.is_masked(lon):
+        return np.nan
     lt = int(np.floor(lat))
     lg = int(np.floor(lon))
     if np.isnan(lt) or np.isnan(lg):
@@ -104,7 +107,9 @@ def main():
                     FileName = f"S{chr(ord('A') - lettr)}{numbr:02d}"
                 else:
                     FileName = f"{chr(ord('A') + lettr - 1)}{numbr:02d}"
-                if os.path.exists("TerrainData/"+FileName):
+                if os.path.exists(FileName):
+                    ## Don't redownload if the file already exists
+                    #print(f"Terrain folder {FileName} exists, skipping download.")
                     continue
                 else:
                     zipFileName = f"{FileName}.zip"
@@ -117,7 +122,7 @@ def main():
                             print(f"Could not download {zipFileName} from {url}")
                             continue
                     try:
-                        if not os.path.exists(os.path.join(TdbData, dname)):
+                        if not os.path.exists(os.path.join(FileName, dname)):
                             with zipfile.ZipFile(zipFileName, 'r') as zip_ref:
                                 zip_ref.extractall(TdbData)
                             print(f"Extracted {zipFileName}")
@@ -134,9 +139,11 @@ def main():
                         with gzip.open(sname, 'wb') as f:
                             np.save(f, height)
                         print(f"Saved {sname}")
+                    
 
         os.chdir("..")
         print("Done loading Terrain Database")
+        
 
     fnew = f"{Directory}/{Project}{Flight}Z.nc"
     print(f"Copy file {fname} to {fnew}")
@@ -189,18 +196,6 @@ def main():
     minmax2 = f"{np.nanmin(ALTG):.0f}f,{np.nanmax(ALTG):.0f}f"
     nc_data.variables['ALTG_SRTM'].setncattr('actual_range', minmax2)
 
-    ##Uncomment to plot results for debugging
-"""     nc_data.close()
-    plt.figure(figsize=(12, 6))
-    plt.plot(Time, GGALT, label='GGALT (Geometric Altitude)')
-    plt.plot(Time, SFC, label='SFC (Surface Height)')
-    plt.plot(Time, ALTG, label='ALTG (Geometric Altitude - Surface Height)')
-    plt.xlabel('Time')
-    plt.ylabel('Height (m)')
-    plt.title(f'Height Variables Over Time for {Project} {Flight}')
-    plt.legend()
-    plt.grid(True)
-    plt.show() """
 
 if __name__ == "__main__":
     main()
