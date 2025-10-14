@@ -26,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Process terrain height data.')
     parser.add_argument('Project', type=str, nargs='?', default='CAESAR', help='Project name')
     parser.add_argument('Flight', type=str, nargs='?', default='rf05', help='Flight number')
-    parser.add_argument('Directory', type=str, nargs='?', default='/Users/srunkel/dev/Data/dat', help='Directory path')
+    parser.add_argument('Directory', type=str, nargs='?', default='.', help='Directory path')
     parser.add_argument('lt_s', type=int, nargs='?', default=37, help='Southern latitude')
     parser.add_argument('lt_n', type=int, nargs='?', default=41, help='Northern latitude')
     parser.add_argument('lg_w', type=int, nargs='?', default=-111, help='Western longitude')
@@ -71,8 +71,8 @@ def HeightOfTerrain(lat, lon):
     return np.nan
 
 def main():
+    global TdbData
     args = parse_args()
-
     Project = args.Project
     Flight = args.Flight
     Directory = args.Directory
