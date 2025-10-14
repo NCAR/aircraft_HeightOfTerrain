@@ -88,7 +88,10 @@ def main():
     numbr = '';
     if Tdb == "yes":
         if not os.path.exists(TdbData):
-            os.makedirs(TdbData)
+            ## If server terrain folder does not exist, store terrain data locally
+            print(f"Creating Terrain Database folder in current directory: ./TerrainData")
+            os.makedirs("./TerrainData", exist_ok=True)
+            TdbData = "./TerrainData" # Change database path to local folder
         os.chdir(TdbData)
         for lt in range(lt_s, lt_n + 1):
             lettr = lt // 4 + 1
