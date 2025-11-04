@@ -62,7 +62,7 @@ def HeightOfTerrain(lat, lon):
                 iy = int((np.ceil(lat) - lat + 1/2400) * 1200)
                 if np.ceil(lat) == lat:
                     iy = 1200
-                hgt = height[ix, iy]
+                hgt = height[iy, ix]
                 return hgt
             except FileNotFoundError as e:
                 print(e)
