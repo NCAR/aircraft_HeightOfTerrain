@@ -1,11 +1,5 @@
-HeightOfTerrain.aux
-HeightOfTerrain.log
-HeightOfTerrain.out
-HeightOfTerrain.tex
-Rplots.pdf
-SessionInfo
-TerrainData/
-cache/
-figure/
-HeightOfTerrain.R
-HeightOfTerrain.zip
+R_version/HeightOfTerrain.R
+R_version/HeightOfTerrain.zip
+R_version/SessionInfo
+R_version/TerrainData/
+R_version/terrain.Rdata.gz

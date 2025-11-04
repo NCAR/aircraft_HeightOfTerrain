@@ -1,0 +1,481 @@
+%% LyX 2.1.2 created this file.  For more info, see http://www.lyx.org/.
+\documentclass[12pt]{article}
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=3.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm,headheight=1cm,headsep=2cm,footskip=0.5cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{color}
+\usepackage[unicode=true]
+ {hyperref}
+\usepackage{breakurl}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\addressee} \global\addressee={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Memo to: \the\addressee \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\EOLmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Earth Observing Laboratory}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+
+\makeatother
+
+\begin{document}
+\EOLmemo 
+
+\global\addressee={Project File}  % >>change "File" to the "To:" name desired
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{To:}}} & \the\addressee\tabularnewline
+\textsf{\textsc{\textcolor{blue}{From:}}} & Al Cooper\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Subject:}}} & A new terrain-elevation variable for RAF datasets\tabularnewline
+\end{tabular}
+
+\bigskip
+
+<<initialization,echo=FALSE,include=FALSE>>=
+
+writeLines("This script must be run from barolo as libraries aren't currently installed elsewhere")
+
+args <- commandArgs(trailingOnly = TRUE)
+TdbData <- "/scr/raf_data/TerrainDataR"
+
+if (length(args) == 8) {
+   print("Using values from command line")
+   Project = args[1] ## project name in caps
+   Flight <- args[2] ##rfxx
+   Directory <- args[3]
+   lt_s <- args[4]
+   lt_n <- args[5]
+   lg_w <- args[6]
+   lg_e <- args[7]
+   Tdb <- args[8]
+} else {
+   writeLines("Usage:
+\tTo use in RStudio browser window, edit hard-coded flight and project name above and run.
+To use at the command line, give project name in caps and flight number with
+lower case [rtf] as command line arguments,e.g.
+Rscript HeightOfTerrain.R $project $flight $Dir lt_s lt_n lg_w lg_e Tdb")
+   quit()
+}
+
+library(knitr)
+library(RCurl)
+opts_chunk$set(echo=FALSE, include=FALSE, fig.lp="fig:", size='small')
+opts_chunk$set(fig.width=6, fig.height=5, fig.pos="center", digits=4)
+thisFileName <- "HeightOfTerrain"
+require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
+require(ggplot2)
+require(grid)
+require(ggthemes)
+require(sm)
+require(plyr)
+require(ncdf4)
+require(maps)
+fname = sprintf("%s/%s%s.nc", Directory,Project, Flight)
+SaveRData <- sprintf("%s.Rdata.gz", thisFileName)
+print(sprintf("Processing %s %s",fname,Tdb))
+@
+
+
+\section*{The Source For Data}
+
+During the Shuttle Radar Topography Mission (SRTM) of 2000,%
+\footnote{Farr, T.G., M. Kobrick, 2000, Shuttle Radar Topography Mission produces
+a wealth of data, Amer. Geophys. Union Eos, v. 81, p. 583-585.%
+}%
+\footnote{Farr, T. G., et al. (2007), The Shuttle Radar Topography Mission,
+Rev. Geophys., 45, RG2004, doi:10.1029/2005RG000183%
+} the altitude of the Earth's surface was mapped from 56S to 60N latitude
+with resolution of 3 arc-sec or about 90 m at the equator. For the
+US and territories, the resolution was 1 arc-sec or about 30 m. The
+data from this mission are archived at this web site: \href{http://www.webgis.com/srtm3.html}{http://www.webgis.com/srtm3.html}.
+The measurements can be download in individual files that span 1 degree by
+1 degree. The format of these files leads to the need for some processing
+that is documented here. An improved dataset that is largely based on the SRTM database but has been edited extensively to fill in missing values is available here: \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}. That database  was constructed and is maintained by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. For the US, higher-resolution data are available at this web page: \href{http://ned.usgs.gov/epqs/}{http://ned.usgs.gov/epqs/}. This USGS website provides the ability for a user to supply a latitude-longitude position and receive a height measurement, so it could have been used for NOMADSS instead of the Ferranti site that was selected, but the higher resolution does not have an advantage for the present purpose and it was thought preferable to develop a tool that would work worldwide. However, for NOMADSS the USGS data are valuable for checking the results obtained, as discussed later in this memo.
+
+The R code that downloaded these files is in the 'chunk' of this document
+called 'download-zip-files'. Initially, the range downloaded covered 24N to 45N latitude and -105W to -72W longitude. 
+After unzipping, the data set was large, approaching 1 GB as saved for use in this routine, but the area covered was a significant part of the U.S.~so this large database was needed to span that full area. The heights in the 3-arc-sec files are presented in 1201$\times$1201
+arrays where the edges duplicate the values in the adjacent arrays and the measurements cover 1$^{\circ}\times 1^{\circ}$. The format is row-major, i.e., the
+1201 values for the first west-to-east row are presented first, then
+the next row to the south, etc. Because R is inherently column-major,
+there are some aspects of indexing in the code used here that
+have indices reversed from what might have been expected. The unpacked individual 1-deg files have 2,884,802 bytes. In these archives, the missing-value flag is -32768. 
+
+The reference location for each 1-degree by 1-degree array is the
+name of the individual file (e.g., \textquotedbl{}N43W101.hgt\textquotedbl{}
+has a reference position of 43$^{\circ}$N and 101$^{\circ}$W at
+the center of the southwest-corner element of the array). The values give
+the height in meters above the WGS84/EGM96 geoid. The measurement
+uncertainty was about 9 m at 90\% confidence%
+\footnote{The standard uncertainty would be about 5 m.%
+} (Farr et al.\textasciitilde{}2007), but there are some biases. The
+SAR radar did not always penetrate fully through vegetation and
+so might reflect the top of the vegetation canopy or some level intermediate
+between the canopy and the surface, and the radar penetrated a few
+meters into snow and so measured a height between the snow cover and
+the terrain (as measured in Feb.~2000). Also, there are some gaps,
+especially in mountainous areas, although those have mostly been filled in this Ferranti-edited dataset by reference to topographic maps and there are only very rare gaps for the CONUS.
+
+Below, R code that downloads, unzips, and reads the data files is
+listed. The entire-Earth dataset would require about 25 GB to store,
+so the download should be limited in area to the region of the project. For NOMADSS, the project range covered a large portion of the SE U.S., so there was still a necessity to download and save a large amount of data, approaching 1 GB. The routine is set to do this the first time it is run and save the data in an archive that can be used on subsequent runs. Some files are missing because they cover only ocean areas; in this processing, those are interpreted as leading to zero values for the terrain.
+
+Here the data files are saved in Rdata-format gzipped files suitable
+for loading via commands like \textquotedbl{}load(file='ZN40W101.gz')\textquotedbl{},
+which will retrieve the 'height' matrix for that lat/lon square. This is handled in the code-chunk 'download-zip-files' listed below.
+
+<<download-zip-files, echo=TRUE, include=TRUE, cache=TRUE>>=
+if (identical(Tdb,"yes")) {
+   # there must be a subdirectory named 'TerrainData' 
+   setwd (TdbData)    # Save the data in a subdirectory 
+   ###### next are the limits for the range to download
+   ## each zip file contains 4 deg latitude x 6 deg longitude, for the source used
+   #     (http://www.viewfinderpanoramas.org/dem3.html)
+   #     Acknowledgement: Jonathan de Ferranti BA
+   #                      Lochmill Farm
+   #                      Newburgh, Fife, KY14 6EX, United Kingdom
+   ## Identifier for individual files is lat/lon at SE corner
+   #  Identifier for zip files containing 4 x 6 individual files is 
+   # [none/S]LetterNmbr where
+   ## for US, e.g., NOMADSS, indices are as follows:
+   #      letter = LETTER[floor (lat/4) + 1]
+   #      Nmbr = 30 + floor (lon/6) + 1
+   ###### loop through the needed files
+   for (lt in lt_s:lt_n) {    # latitude limits (note 'N' or 'S' in sprintf statement) 
+     ifelse (lt >= 0, NS <- 'N', NS <- 'S')
+     # Deal with crossing 180 -> -180
+     if (lg_w > lg_e) {
+       lrange = c(lg_w:180,-180:lg_e)
+     } else {
+       lrange = lg_w:lg_e
+     }
+     for (lg in lrange) {   # longitude limits (note 'E' or 'W') 
+       ifelse (lg >= 0, EW <- 'E', EW <- 'W')
+       sname <- sprintf("Z%s%d%s%03d.gz", NS, abs(lt), EW, abs(lg)) 
+       dname <- sprintf ("%s%02d%s%03d.hgt", NS, abs(lt), EW, abs(lg)) # a sq. degree of data 
+       if (file.exists(sname)) {   # Skip if file is already present 
+         unlink (dname)  
+       } else {
+   # is it already there from a previous download?
+         if (file.exists (dname)) {
+           #                # 'swap' changes from big-endian to little-endian 
+           height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
+           height [height == -32768] <- NA     # set NA for missing values 
+           dim (height) <- c(1201,1201)        # Make into a matrix 
+           save (height, file=sname, compress='gzip') 
+           unlink (dname) # delete the unzipped file 
+         } else {
+   # find the database file that contains this:
+           lettr <- floor (lt %/% 4) + 1
+           numbr  <- 30 + floor (lg %/% 6) + 1
+           if (lt < 0) {
+             zipFileName <- sprintf ("S%s%02d.zip", LETTERS[1-lettr], numbr)
+           } else {
+             zipFileName <- sprintf ("%s%02d.zip", LETTERS[lettr], numbr)
+           }
+         # sprintf(" needed zip file is %s", zipFileName)
+         # if it's already present, skip download
+           if (!file.exists(zipFileName)) {
+             url <- sprintf("https://www.viewfinderpanoramas.org/dem3/%s", zipFileName)
+             if (RCurl::url.exists (url, followlocation=FALSE)) { # there are false moved-URLs ...
+               f = RCurl::CFILE(zipFileName, mode="wb")
+               RCurl::curlPerform(url = url, writedata = f@ref)
+               on.exit(close(f))
+               unzip (zipFileName, junkpaths=TRUE)
+               unlink (zipFileName)
+               system (sprintf("touch %s", zipFileName))
+               ## The reason for the preceding statement is to prevent trying to
+               ## download repeatedly in cases where the file is not present, for
+               ## example because it is entirely over ocean.
+             }
+           }
+         }
+         if (file.exists(dname)) {
+           height <- readBin (dname, 'int', size=2, n=1201*1201, endian='swap')
+           height [height == -32768] <- NA     # set missing values to NA
+           dim (height) <- c(1201,1201)        # Make into a matrix 
+           save (height, file=sname, compress='gzip') 
+           unlink (dname) # delete the unzipped file 
+         } 
+       } 
+     } 
+   }
+   setwd(".")
+   print("Done loading Terrain Database")
+} else {
+   print("Skip loading Terrain Database")
+}
+@
+
+The values in these data files are binary two-byte or 16-bit
+signed integers and are in big-endian format (most significant byte
+first) while our processing machines are mostly little-endian, so
+a byte-swapping conversion is necessary. This was readily performed
+by the R reading function 'readBin', as illustrated in the preceding
+code chunk. It was useful to construct a function that would return
+the terrain altitude for a given latitude and longitude, so that is
+shown in the next chunk. This function is also used in the validation
+step discussed later in this memo.
+
+<<height-function, echo=TRUE, include=TRUE>>=
+
+HeightOfTerrain <- function (.lat, .long) { 
+  lt <- as.integer (floor(.lat)) 
+  lg <- as.integer (floor(.long)) 
+  if (is.na(lt) || is.na(lg)) {return (NA)} # beware of bad input
+  if (lt < 0) { 
+    NS <- "S" 
+    lt <- -lt 
+  } else {
+    NS <- "N" 
+  } 
+  if (lg < 0) {
+    EW <- "W" 
+    lg <- -lg 
+  } else { 
+    EW <- "E" 
+  } 
+  vname <- sprintf("Z%s%02d%s%03d", NS, lt, EW, lg) 
+  if (!exists(vname, .GlobalEnv)) { 
+    zfile <- sprintf("%s.gz", vname)
+    print (TdbData)
+    print (zfile)
+    if (file.exists(sprintf("%s/%s",TdbData,zfile))) {
+      print("XXX")
+      load(file=sprintf("%s/%s.gz", TdbData,vname)) 
+      assign (vname, height, envir=.GlobalEnv)
+    } else { 
+      return (NA) 
+    } 
+  } 
+  ix <- as.integer ((.long - floor (.long) + 1/2400) * 1200) + 1 
+  iy <- as.integer ((ceiling (.lat) - .lat + 1/2400) * 1200) + 1
+  if (ceiling (.lat) == .lat) { # exact match fails; correct it
+    iy <- 1201
+  }
+  hgt <- get(vname, envir=.GlobalEnv)[ix, iy] 
+  return (hgt) 
+}
+@
+
+\section*{Testing results against the USGS values}
+
+The USGS provides a service where a user can obtain the height of terrain at a specified latitude and longitude. The web site is \href{http://ned.usgs.gov/epqs}{http://ned.usgs.gov/epqs}. The following code chunk generates random latitude and longitude coordinates covering the NOMADSS operational area, fetches the altitude from the USGS site, and compares it to the altitude obtained from the 'HeightOfTerrain' subroutine used in this program.
+
+<<USGS-test, echo=TRUE, include=TRUE, warning=FALSE,message=FALSE, eval=FALSE>>=
+
+require(RCurl)
+n <- 5000
+HOT <- vector ("numeric", n)
+USGS <- vector ("numeric", n)
+ltt <- runif (n, lt_s, lt_n)
+lgg <- runif (n, lg_w, lg_e)
+for (i in 1:n) {
+  HOT[i] <- HeightOfTerrain (ltt[i], lgg[i])
+  url <- sprintf ("https://137.227.248.58/pqs.php?x=%f&y=%f&units=Meters&output=json", lgg[i], ltt[i])
+  USGS[i] <- as.numeric (strsplit (strsplit (RCurl::getURL(url), 'Elevation\":')[[1]][2], ',.*'))
+}
+meanDiff <- mean (HOT-USGS, na.rm=TRUE)
+sdDiff <- sd (HOT-USGS, na.rm=TRUE)
+print (sprintf ("mean difference: %f", meanDiff))
+print (sprintf ("std dev: %f", sdDiff))
+hist (HOT-USGS, breaks=50, xlim=c(-10,10))
+@
+
+The mean difference from this comparison was
+%\Sexpr{round(meanDiff,2)} m 
+-0.7 m and the standard deviation in the difference was 
+%\Sexpr{round(sdDiff,2)} m 
+3.4 m for 
+%\Sexpr{n} 
+5000 generated points. Because these data sources have different resolution (about 3 arc-sec for SRTM, about 1/3 arc-sec for USGS), some small differences are expected, but these values are closer than would be expected from the uncertainty in the SRTM values discussed above so this is good evidence that the values used here are within expected tolerances for uncertainty. Figure 1 is a histogram of the differences for the 5000 randomly selected positions.
+
+\noindent \begin{center}
+\begin{figure}
+\noindent \begin{centering}
+\includegraphics[width=15cm]{figure/USGS-test}
+\par\end{centering}
+
+\protect\caption{\textsl{Difference in altitude between that obtained from the USGS web site and that provided by the function HeightOfTerrain in this program, in meters, for the 5000 randomly generated points in the NOMADSS operations area.}}
+\end{figure}
+
+\par\end{center}
+
+
+\section*{Adding a netCDF terrain-height variable}
+
+For a netCDF file, it is then possible to define new variables that
+represent the elevation of the terrain below the aircraft and also
+the height of the aircraft above the terrain. For example, here is
+code that does this:
+
+<<add-variables-to-netCDF-file, echo=TRUE, include=TRUE>>=
+
+fname <- sprintf("%s/%s%s.nc", Directory, Project, Flight)
+fnew <- sprintf("%s/%s%sZ.nc", Directory, Project, Flight) 
+print(sprintf("Copy file %s to %s",fname,fnew))
+# copy file to avoid changing original: note 'Z' in new file name
+file.copy (fname, fnew, overwrite=TRUE)   #careful: will overwrite 'Z' file
+# load data needed to calculate the new variables:
+#   ... there is no GGALTB in NOMADSS files? (What is GGALTC?) Use GGALT
+netCDFfile <- nc_open(fnew, write=TRUE) 
+time <- ncvar_get(netCDFfile, "Time")
+LATC <- ncvar_get(netCDFfile, "LATC")
+LONC <- ncvar_get(netCDFfile, "LONC")
+GGALT <- ncvar_get(netCDFfile, "GGALT")
+Data <- data.frame(LATC = as.vector(LATC), LONC = as.vector(LONC), GGALT = as.vector(GGALT))
+#Data <- getNetCDF (fnew, c("LATC", "LONC", "GGALT")) 
+SFC <- vector ("numeric", length (Data$Time)) 
+# have to use a loop here because HeightOfTerrain looks
+# up and loads needed files so is not suited to vector ops
+for (i in 1:length (Data[ ,1])) {
+  if (is.na (Data$LONC[i]) || is.na (Data$LATC[i])) {
+    SFC[i] <- NA
+  } else {
+    SFC[i] <- HeightOfTerrain (Data$LATC[i], Data$LONC[i]) 
+  }
+} 
+
+# replace missing values with interpolated values for gaps up to 10 s in length:
+# Check if have at least two non-NA values in SFC. If not, fill all NA's
+# with zeros.
+if (!all(is.na(SFC))) {
+    SFC <- zoo::na.approx (SFC, maxgap=10, na.rm = FALSE) 
+} 
+SFC[is.na(SFC)] <- 0      # replace missing values with zero; mostly ocean pts
+ALTG <- Data$GGALT - SFC 
+Data["SFC_SRTM"] <- SFC   # add new variable to data.frame
+Data["ALTG_SRTM"] <- ALTG
+SaveRData <- "terrain.Rdata.gz"
+# comment one of these
+save(Data, file=SaveRData, compress="gzip")
+# load(file=SaveRData)
+
+<<modify-netCDF-file, tidy=TRUE, tidy.opts=list(width=60)>>=
+
+netCDFfile <- nc_open(fnew, write=TRUE)
+
+varSFC <- ncvar_def ("SFC_SRTM", "m", netCDFfile$dim["Time"], -32767., "Elevation of the Earth's surface below the aircraft position, WGS-84") 
+varALTG <- ncvar_def ("ALTG_SRTM", "m", netCDFfile$dim["Time"], -32767., "Altitude of the aircraft above the Earth's surface, WGS-84")
+newfile <- ncvar_add (netCDFfile, varSFC, verbose=TRUE)
+ncatt_put (newfile, "SFC_SRTM", attname='DataSource', 
+              attval="viewfinderpanorama Jonathan de Ferranti")
+ncatt_put (newfile, "SFC_SRTM", attname="Category", attval="Position")
+ncatt_put (newfile, "SFC_SRTM", attname="Dependencies", attval="2 LATC LONC")
+minmax <- sprintf ("%.0f.f,%.0f.f", min (SFC, na.rm=TRUE), max (SFC, na.rm=TRUE))
+ncatt_put (newfile, "SFC_SRTM", attname="actual_range", attval=minmax)
+newfile <- ncvar_add (newfile, varALTG)
+ncatt_put (newfile, "ALTG_SRTM", attname="DataSource", attval="viewfinderpanorama Jonathan de Ferranti")
+ncatt_put (newfile, "ALTG_SRTM", attname="Category", attval="Position")
+ncatt_put (newfile, "ALTG_SRTM", attname="Dependencies", attval="2 SFC_SRTM GGALT")
+minmax2 <- sprintf ("%.0f.f,%.0f.f", min (ALTG, na.rm=TRUE), max (ALTG, na.rm=TRUE))
+ncatt_put (newfile, "ALTG_SRTM", attname="actual_range", attval=minmax2) 
+ncvar_put (newfile, "SFC_SRTM", SFC) 
+ncvar_put (newfile, "ALTG_SRTM", ALTG) 
+nc_close (newfile)
+FigCap1 <- sprintf("The flight track for %s flight %s.", Project, Flight)
+@
+
+This example was for project \Sexpr{Project} and flight \Sexpr{Flight}. Note in the code that there is a step for interpolating to fill in short periods (up to 10 s) that otherwise would be missing values; that is the 'zoo::' command above. When there is no terrain but only ocean, the dataset did not include lat-long squares for those regions, so there are also missing-value regions over ocean that are not filled in. I think the remaining missing-value regions after interpolation to fill small gaps are mostly over ocean and could be replaced by zero, so for now I have done that to have better appearing plots.
+The flight track is shown in Fig.~\ref{fig:plot-flight-track}, and the altitude of the terrain below the aircraft is shown in Fig.~\ref{fig:plot-terrain-height} for that flight.
+
+<<plot-flight-track, fig.lp="fig:", fig.cap=FigCap1, include=TRUE>>=
+
+#Z <- plotTrack (Data$LONC, Data$LATC, Data$Time, .Spacing=60, .WindFlags=2) 
+#title (Flight) 
+#FigCap2 <- sprintf ("The elevation of the terrain below the position of the aircraft during %s Flight %s.", Project, Flight)
+@
+
+
+<<plot-terrain-height, echo=TRUE, include=TRUE, fig.lp="fig:", fig.cap=FigCap2, fig.height=5>>=
+
+#SFC[is.na(SFC)] <- 0 
+#r <- setRange(Data$Time, 82400,85200)
+#Z <- plotWAC (Data$Time, SFC, ylab="Terrain Elevation [m]") 
+#title (Flight)
+@
+
+\section*{Considerations for routine implementation}
+
+The result of this processing is a new netCDF file that duplicates the original except for the addition of two variables, SFC\_SRTM and ALTG\_SRTM (respectively surface elevation and altitude above the ground). The netCDF file has an identifying 'Z' at the end of the name, in this case NOMADSSrf01Z.nc. (Beware: This program overwrites that file, if present, without warning.) If this is a desirable variable to include in production files, that could be done in two ways. The function used here, 'HeightOfTerrain (lat, long)', with appropriate communication tools can be called from C/C++ programs, so that may be the best way to get this variable into nimbus. Alternately, this program could be run on production files as a second-pass processor to add the variable as I have done here. 
+\bigskip
+
+Acknowledgements:
+
+\bigskip
+Data obtained from \href{http://www.viewfinderpanoramas.org/dem3.html}{http://www.viewfinderpanoramas.org/dem3.html}, a database constructed by Jonathan de Ferranti BA, Lochmill Farm, Newburgh, Fife, KY14 6EX, United Kingdom. The analyses reported here were performed using R\footnote{R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/}, with RStudio\footnote{RStudio: Integrated development environment for R (Version 0.98.879) [Computer software]. Boston, MA. Available from http://www.rstudio.org/ (2009)} and knitr\footnote{Xie, Y. (2013), knitr: A general-purpose package for dynamic report generation in R. R package version 1.3. Version 1.6 was used for this work. See also Xie, Y (2014), Dynamic documents with R and knitr, CRC Press, Chapman and Hall, 190 pp.}. 
+\bigskip
+\begin{center}
+\textsf{\textcolor{blue}{-- End of Memo --}}
+\par\end{center}
+\vfill\eject
+Reproducibility:
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{Project:}}} & HeightOfTerrain\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Archive package:}}} & \Sexpr{thisFileName}.zip\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Contains:}}} & attachment list below\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Program:}}} & \Sexpr{thisFileName}.Rnw\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Project}\Sexpr{Flight}.nc \tabularnewline
+\textsf{\textsc{\textcolor{blue}{Git:}}} & git@github.com:WilliamCooper/HeightOfTerrain.git\tabularnewline
+\end{tabular}
+
+\attachm{\Sexpr{thisFileName}.Rnw\\\Sexpr{thisFileName}.pdf\\\Sexpr{SaveRData}\\SessionInfo}
+%\cc{first attachment\\second\\3rd att}
+%\attach{attachment}
+%\attachm{first\\second} %\cc{first attachment\\second\\3rd att}
+<<save-system-info, echo=FALSE>>= 
+cat (toLatex(sessionInfo()), file="SessionInfo")
+@ 
+<<make-zip-archive, echo=TRUE, INCLUDE=TRUE>>=
+system (sprintf("zip %s.zip %s.Rnw %s.pdf SessionInfo %s", thisFileName, 
+                thisFileName, thisFileName, SaveRData))
+@ 
+
+%\attach{attachment}
+
+%\attachm{ProgramFile\\Document.pdf\\\Sexpr {SaveRData}}
+
+%\cc{first attachment\\second\\3rd att}
+\end{document}

@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Set the project
+project="GOTHAAM"
+rate="LRT" # LRT or HRT
+
+# This script needs to be run from run_all so ${DAT} will be set. Else, at the command line
+# "setenv DAT ${DATA_DIR}/${project}"
+DAT=/scr/raf/Prod_Data/${project}/LRT
+
+homedir=~
+Rscript -e "library(knitr); knitr::purl('$homedir/Rstudio/HeightOfTerrain/R_version/HeightOfTerrain.Rnw')"
+
+Directory=${DAT}
+
+# Default lat/lon to roughly Colorado. Must be set for each project. This is
+# the area for which the Terrain database will be downloaded. Set to minimum
+# area needed to speed up processing and save disk space.
+echo "/opt/local/bin/flt_area ${DAT}/${project}[rt]f??.nc | tail -4"
+area=`/opt/local/bin/flt_area ${DAT}/${project}[rt]f??.nc | tail -4`
+echo ${area[0]}
+area_array=($area)
+
+lt_s=${area_array[5]}
+lt_n=${area_array[2]}
+lg_w=${area_array[8]}
+lg_e=${area_array[11]}
+
+# Set Tdb to yes the first time this is run to download the Terrain database.
+# Set to no after first run to save time.
+Tdb="no"
+
+# Expand everything out a degree to ensure we don't loose any edge data.
+lt_s=$(echo "$lt_s - 1" | bc)
+lt_n=$(echo "$lt_n + 1" | bc)
+lg_w=$(echo "$lg_w - 1" | bc)
+lg_e=$(echo "$lg_e + 1" | bc)
+
+echo 'Adding Terrain Ht vars to netCDF files in '${DAT}' for project '$project
+echo 'Using lat/long range '${lt_s}' - '${lt_n}', '${lg_w}' - '${lg_e}
+
+r=""
+if [[ $rate == "HRT" ]]; then r="h"; fi
+echo $r
+
+for file in `ls $Directory/${project}[rtf]f??${r}.nc`
+do
+    if [[ $rate == "HRT" ]]; then
+        flight=${file:(-7):4}
+    else
+        flight=${file:(-8):5}
+    fi
+    echo "Rscript ./HeightOfTerrain.R $project $flight $Directory $lt_s $lt_n $lg_w $lg_e $Tdb"
+# Uncomment this line when you are ready to actually run.
+#    Rscript ./HeightOfTerrain.R $project $flight $Directory $lt_s $lt_n $lg_w $lg_e $Tdb
+done
