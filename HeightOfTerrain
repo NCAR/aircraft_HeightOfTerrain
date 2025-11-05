@@ -12,8 +12,12 @@ import datetime
 import argparse
 
 # Configuration
-TdbData = "/scr/raf_data/TerrainData" 
+TdbData = "/scr/raf_data/TerrainData"
 thisFileName = "HeightOfTerrain"
+
+# Global cache for terrain tiles (like .GlobalEnv in R version)
+# Key: tile name (e.g., "N40W105"), Value: 1201x1201 height array
+_terrain_cache = {}
 
 def datetoday():
     """Returns the current date in 'Day Month Year' format."""
@@ -35,40 +39,69 @@ def parse_args():
     return parser.parse_args()
 
 def HeightOfTerrain(lat, lon):
+    """Get terrain height at given latitude/longitude coordinates.
+
+    Uses a global cache to avoid reloading the same terrain tiles.
+    This significantly speeds up processing when aircraft stays in same tile.
+
+    Args:
+        lat: Latitude in degrees (-90 to 90)
+        lon: Longitude in degrees (-180 to 180)
+
+    Returns:
+        Height in meters, or np.nan if unavailable
+    """
     # Check for masked values
     if np.ma.is_masked(lat) or np.ma.is_masked(lon):
         return np.nan
+    # Check for NaN values BEFORE converting to int
+    if np.isnan(lat) or np.isnan(lon):
+        return np.nan
+
     lt = int(np.floor(lat))
     lg = int(np.floor(lon))
-    if np.isnan(lt) or np.isnan(lg):
-        return np.nan
     NS = 'S' if lt < 0 else 'N'
     lt = abs(lt)
     EW = 'W' if lg < 0 else 'E'
     lg = abs(lg)
     vname = f"{NS}{lt:02d}{EW}{lg:03d}"
-    hgt_file = f"{vname}.hgt"
-    
-    # Search for the .hgt file in the subfolders
-    for root, dirs, files in os.walk(TdbData):
-        if hgt_file in files:
-            hgt_file_path = os.path.join(root, hgt_file)
-            try:
-                with open(hgt_file_path, 'rb') as f:
-                    height = np.fromfile(f, dtype='>i2').astype(np.float32) # ensure float32
-                height[height == -32768] = np.nan
-                height = height.reshape(1201, 1201)
-                ix = int((lon - np.floor(lon) + 1/2400) * 1200)
-                iy = int((np.ceil(lat) - lat + 1/2400) * 1200)
-                if np.ceil(lat) == lat:
-                    iy = 1200
-                hgt = height[iy, ix]
-                return hgt
-            except FileNotFoundError as e:
-                print(e)
-                return np.nan
-    print(f"File not found: {hgt_file}")
-    return np.nan
+
+    # Check if tile is already in cache (like R's exists() check)
+    if vname not in _terrain_cache:
+        # Not cached - need to load it
+        hgt_file = f"{vname}.hgt"
+
+        # Search for the .hgt file in the subfolders
+        for root, dirs, files in os.walk(TdbData):
+            if hgt_file in files:
+                hgt_file_path = os.path.join(root, hgt_file)
+                try:
+                    with open(hgt_file_path, 'rb') as f:
+                        height = np.fromfile(f, dtype='>i2').astype(np.float32)
+                    height[height == -32768] = np.nan
+                    height = height.reshape(1201, 1201)
+
+                    # Cache the loaded tile (like R's assign to .GlobalEnv)
+                    _terrain_cache[vname] = height
+                    break
+                except FileNotFoundError as e:
+                    print(e)
+                    return np.nan
+        else:
+            # File not found in any subfolder
+            print(f"File not found: {hgt_file}")
+            return np.nan
+
+    # Get height array from cache (like R's get(vname, envir=.GlobalEnv))
+    height = _terrain_cache[vname]
+
+    # Calculate indices and return height at that position
+    ix = int((lon - np.floor(lon) + 1/2400) * 1200)
+    iy = int((np.ceil(lat) - lat + 1/2400) * 1200)
+    if np.ceil(lat) == lat:
+        iy = 1200
+    hgt = height[iy, ix]
+    return hgt
 
 def main():
     global TdbData
