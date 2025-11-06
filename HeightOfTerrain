@@ -10,6 +10,7 @@ import netCDF4
 from scipy.interpolate import interp1d
 import datetime
 import argparse
+import sys
 
 # Configuration
 TdbData = "/scr/raf_data/TerrainData"
@@ -26,15 +27,109 @@ def datetoday():
                    "July", "August", "September", "October", "November", "December"]
     return f"{now.day} {month_names[now.month - 1]} {now.year}"
 
+def get_flight_bounds(nc_file_pattern):
+    """Get lat/lon bounding box for flight(s) using flt_area utility.
+
+    Calls the flt_area command-line utility to determine the geographic
+    bounding box from NetCDF file attributes (geospatial_lat/lon_max/min).
+
+    Args:
+        nc_file_pattern: File pattern for NetCDF files (e.g., "/path/to/PROJECTrf*.nc")
+
+    Returns:
+        tuple: (lt_s, lt_n, lg_w, lg_e) - Southern lat, Northern lat, Western lon, Eastern lon
+               All values are floored/ceiled integers, expanded by 1 degree for margin.
+               Returns None if flt_area fails or is not available.
+
+    Example:
+        >>> bounds = get_flight_bounds("/data/SOCRATESrf*.nc")
+        >>> print(bounds)  # (lt_s, lt_n, lg_w, lg_e)
+        (-63, -41, 132, 164)
+    """
+    import subprocess
+    import shutil
+
+    # Check if flt_area utility is available
+    if shutil.which('flt_area') is None:
+        print("Warning: flt_area utility not found in PATH.")
+        print("Cannot auto-determine lat/lon bounds. Please specify manually.")
+        return None
+
+    try:
+        # Run flt_area command
+        result = subprocess.run(
+            ['flt_area', nc_file_pattern],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode != 0:
+            print(f"Error running flt_area: {result.stderr}")
+            return None
+
+        # Parse output - get last 4 lines containing the bounds
+        lines = result.stdout.strip().split('\n')
+        if len(lines) < 4:
+            print("Error: flt_area output too short")
+            return None
+
+        # Get last 4 lines (like tail -4 in bash)
+        last_4_lines = lines[-4:]
+
+        # Parse the bounds from output format:
+        # Maximum Latitude: -42.40082
+        # Minimum Latitude: -61.997105
+        # Minimum Longitude: 133.91486
+        # Maximum Longitude: 163.02815
+
+        # Combine into single string (like bash does)
+        area_str = ' '.join(last_4_lines)
+        parts = area_str.split()
+
+        # Extract values at positions 2, 5, 8, 11 (colon-separated values)
+        # When joined: "Maximum Latitude: -42.40082 Minimum Latitude: -61.997105 ..."
+        # Position 0=Maximum, 1=Latitude:, 2=-42.40082, 3=Minimum, 4=Latitude:, 5=-61.997105, ...
+        lat_max = float(parts[2])  # After "Maximum Latitude:"
+        lat_min = float(parts[5])  # After "Minimum Latitude:"
+        lon_min = float(parts[8])  # After "Minimum Longitude:"
+        lon_max = float(parts[11]) # After "Maximum Longitude:"
+
+        # Floor/ceil and expand by 1 degree (like bash script does)
+        lt_s = int(np.floor(lat_min)) - 1
+        lt_n = int(np.ceil(lat_max)) + 1
+        lg_w = int(np.floor(lon_min)) - 1
+        lg_e = int(np.ceil(lon_max)) + 1
+
+        print(f"Auto-detected bounds from flt_area:")
+        print(f"  Latitude:  {lt_s} to {lt_n}")
+        print(f"  Longitude: {lg_w} to {lg_e}")
+
+        return (lt_s, lt_n, lg_w, lg_e)
+
+    except subprocess.TimeoutExpired:
+        print("Error: flt_area command timed out")
+        return None
+    except (IndexError, ValueError) as e:
+        print(f"Error parsing flt_area output: {e}")
+        return None
+    except Exception as e:
+        print(f"Unexpected error running flt_area: {e}")
+        return None
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Process terrain height data.')
     parser.add_argument('Project', type=str, nargs='?', default='CAESAR', help='Project name')
     parser.add_argument('Flight', type=str, nargs='?', default='rf05', help='Flight number')
     parser.add_argument('Directory', type=str, nargs='?', default='.', help='Directory path')
-    parser.add_argument('lt_s', type=int, nargs='?', default=37, help='Southern latitude')
-    parser.add_argument('lt_n', type=int, nargs='?', default=41, help='Northern latitude')
-    parser.add_argument('lg_w', type=int, nargs='?', default=-111, help='Western longitude')
-    parser.add_argument('lg_e', type=int, nargs='?', default=-99, help='Eastern longitude')
+    parser.add_argument('lt_s', type=int, nargs='?', default=None,
+                       help='Southern latitude (auto-detected from NetCDF if not specified)')
+    parser.add_argument('lt_n', type=int, nargs='?', default=None,
+                       help='Northern latitude (auto-detected from NetCDF if not specified)')
+    parser.add_argument('lg_w', type=int, nargs='?', default=None,
+                       help='Western longitude (auto-detected from NetCDF if not specified)')
+    parser.add_argument('lg_e', type=int, nargs='?', default=None,
+                       help='Eastern longitude (auto-detected from NetCDF if not specified)')
     parser.add_argument('Tdb', type=str, nargs='?', default='yes', help='Terrain database flag')
     return parser.parse_args()
 
@@ -116,7 +211,24 @@ def main():
     Tdb = args.Tdb
 
     fname = f"{Directory}/{Project}{Flight}.nc"
-    print(f"Processing {fname} {Tdb}")
+
+    # Auto-detect lat/lon bounds if not specified using flt_area. User must have flt_area installed.
+    if lt_s is None or lt_n is None or lg_w is None or lg_e is None:
+        print(f"Lat/lon bounds not fully specified. Attempting auto-detection...")
+        # Build pattern like: /path/to/PROJECT[rtf]f??.nc
+        nc_pattern = f"{Directory}/{Project}[rtf]f??.nc"
+        bounds = get_flight_bounds(nc_pattern)
+
+        if bounds is None:
+            print("Error: Could not auto-detect bounds and none were provided.")
+            print("Please specify lat/lon bounds manually:")
+            print("  HeightOfTerrain PROJECT FLIGHT DIRECTORY lt_s lt_n lg_w lg_e [Tdb]")
+            sys.exit(1)
+
+        lt_s, lt_n, lg_w, lg_e = bounds
+
+    print(f"Processing {fname}")
+    print(f"Using bounds: lat [{lt_s}, {lt_n}], lon [{lg_w}, {lg_e}]")
     lettr = '';
     numbr = '';
     if Tdb == "yes":
@@ -181,11 +293,9 @@ def main():
         print("Done loading Terrain Database")
         
 
-    fnew = f"{Directory}/{Project}{Flight}Z.nc"
-    print(f"Copy file {fname} to {fnew}")
-    os.system(f"cp {fname} {fnew}")
+    print(f"Writing Height of Terrain variables to {fname}")
 
-    nc_data = netCDF4.Dataset(fnew, 'r+')
+    nc_data = netCDF4.Dataset(fname, 'r+')
     LATC = nc_data.variables['LATC'][:]
     LONC = nc_data.variables['LONC'][:]
     GGALT = nc_data.variables['GGALT'][:]
@@ -211,9 +321,11 @@ def main():
                 SFC[i] = 0
     SFC[np.isnan(SFC)] = 0
     ALTG = GGALT - SFC
-
-    nc_data.createVariable('SFC_SRTM', 'f4', ('Time',), fill_value=-9999)
-    nc_data.createVariable('ALTG_SRTM', 'f4', ('Time',), fill_value=-9999)
+    ##Create Variable if it does not exist
+    if 'SFC_SRTM' not in nc_data.variables:
+        nc_data.createVariable('SFC_SRTM', 'f4', ('Time',), fill_value=-9999)
+    if 'ALTG_SRTM' not in nc_data.variables:
+        nc_data.createVariable('ALTG_SRTM', 'f4', ('Time',), fill_value=-9999)
 
     nc_data.variables['SFC_SRTM'][:] = SFC
     nc_data.variables['ALTG_SRTM'][:] = ALTG
