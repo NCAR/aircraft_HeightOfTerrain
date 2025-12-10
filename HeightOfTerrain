@@ -11,6 +11,10 @@ from scipy.interpolate import interp1d
 import datetime
 import argparse
 import sys
+import warnings
+
+# Suppress only the np.bool deprecation warning from netCDF4
+warnings.filterwarnings('ignore', message='.*np.bool.*', category=DeprecationWarning)
 
 # Configuration
 TdbData = "/scr/raf_data/TerrainData"
@@ -254,8 +258,9 @@ def main():
                     FileName = f"S{chr(ord('A') - lettr)}{numbr:02d}"
                 else:
                     FileName = f"{chr(ord('A') + lettr - 1)}{numbr:02d}"
-                if os.path.exists(FileName) and os.path.exists(dname):
-                    ## Don't continue if file is already downloaded AND extracted
+                if os.path.exists(FileName):
+                    ## Don't redownload if the file already exists
+                    #print(f"Terrain folder {FileName} exists, skipping download.")
                     continue
                 else:
                     zipFileName = f"{FileName}.zip"
