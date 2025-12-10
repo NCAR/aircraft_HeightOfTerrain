@@ -215,7 +215,6 @@ def main():
     # Auto-detect lat/lon bounds if not specified using flt_area. User must have flt_area installed.
     if lt_s is None or lt_n is None or lg_w is None or lg_e is None:
         print(f"Lat/lon bounds not fully specified. Attempting auto-detection...")
-        # Build pattern like: /path/to/PROJECT[rtf]f??.nc
         nc_pattern = f"{Directory}/{Project}[rtf]f??.nc"
         bounds = get_flight_bounds(nc_pattern)
 
@@ -255,9 +254,8 @@ def main():
                     FileName = f"S{chr(ord('A') - lettr)}{numbr:02d}"
                 else:
                     FileName = f"{chr(ord('A') + lettr - 1)}{numbr:02d}"
-                if os.path.exists(FileName):
-                    ## Don't redownload if the file already exists
-                    #print(f"Terrain folder {FileName} exists, skipping download.")
+                if os.path.exists(FileName) and os.path.exists(dname):
+                    ## Don't continue if file is already downloaded AND extracted
                     continue
                 else:
                     zipFileName = f"{FileName}.zip"
